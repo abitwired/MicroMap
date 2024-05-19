@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { ServiceDefinition } from "./types";
-import { Text } from "../text";
-import { InfiniteCanvas } from "../infinite-canvas";
+import { ServiceDefinition } from "../../canvas/node/types";
+import { Text } from "../../canvas/text";
+import { InfiniteCanvas } from "../../canvas/infinite-canvas";
 
 export interface IAddNodeForm extends JSX.Element {
   setVisibility(isVisible: boolean): void;

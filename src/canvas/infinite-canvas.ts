@@ -1,7 +1,7 @@
 import { IContextMenu } from "./context-menu/context-menu";
 import MenuAction from "./context-menu/menu-action";
 import { ILoadingIcon } from "./loading-icon";
-import { IAddNodeForm } from "./node/add-node-form";
+import { IAddNodeForm } from "../components/forms/AddNodeForm";
 import Node from "./node/node";
 import { CanvasElement, DraggableElement, HoverableElement } from "./types";
 

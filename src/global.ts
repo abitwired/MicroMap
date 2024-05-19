@@ -5,6 +5,7 @@ declare global {
   // eslint-disable-next-line no-var
   var share: {
     ipcMain: typeof ipcMain;
+    appDirectory: string;
   };
   interface Window {
     electron: ContextBridge;

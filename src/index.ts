@@ -6,13 +6,24 @@ import { app, BrowserWindow, ipcMain } from "electron";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
-global.share = { ipcMain };
+const userDataPath = app.getPath("userData");
+const appDirectory = `${userDataPath}`;
+global.share = {
+  ipcMain,
+  appDirectory,
+};
 require("./ipc");
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
+
+const fs = require("fs");
+fs.mkdir(appDirectory, { recursive: true }, (err: any) => {
+  if (err) throw err;
+  console.log(`Directory is created. ${userDataPath}`);
+});
 
 const createWindow = (): void => {
   // Create the browser window.

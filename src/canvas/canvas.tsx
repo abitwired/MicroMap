@@ -3,7 +3,7 @@ import { InfiniteCanvas } from "./infinite-canvas";
 import { Text } from "./text";
 import { ContextMenu, IContextMenu } from "./context-menu/context-menu";
 import { ILoadingIcon, LoadingIcon } from "./loading-icon";
-import { IAddNodeForm, AddNodeForm } from "./node/add-node-form";
+import { IAddNodeForm, AddNodeForm } from "../components/forms/AddNodeForm";
 
 export const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -26,32 +26,6 @@ export const Canvas = () => {
         addNodeFormRef.current
       );
 
-      const node = new Text({
-        id: "text-element-1",
-        x: 0,
-        y: 0,
-        width: 175,
-        height: 50,
-        text: "hello world #1",
-        color: "#444",
-        fontColor: "white",
-        canvas,
-      });
-
-      const node2 = new Text({
-        id: "text-element-2",
-        x: 100,
-        y: 300,
-        width: 175,
-        height: 50,
-        text: "hello world #2",
-        color: "#444",
-        fontColor: "white",
-        canvas,
-      });
-
-      canvas.addElement(node);
-      // canvas.addElement(node2);
       setCanvas(canvas);
     }
   }, [canvasRef]);
