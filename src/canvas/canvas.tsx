@@ -25,10 +25,11 @@ export const Canvas = () => {
         loadingRef.current,
         addNodeFormRef.current
       );
+
       const node = new Text({
         id: "text-element-1",
-        x: 100,
-        y: 300,
+        x: 0,
+        y: 0,
         width: 175,
         height: 50,
         text: "hello world #1",
@@ -50,7 +51,7 @@ export const Canvas = () => {
       });
 
       canvas.addElement(node);
-      canvas.addElement(node2);
+      // canvas.addElement(node2);
       setCanvas(canvas);
     }
   }, [canvasRef]);

@@ -59,8 +59,8 @@ export class InfiniteCanvas {
       passive: false,
     });
 
-    this.draw();
     this.resizeCanvas();
+    this.draw();
   }
 
   resizeCanvas() {
@@ -132,13 +132,11 @@ export class InfiniteCanvas {
    * @param event - The mouse event object.
    */
   onMouseDown(event: MouseEvent) {
-    const { clientX, clientY } = event;
-    const rect = this.canvas.getBoundingClientRect();
-    const canvasX = clientX - rect.left;
-    const canvasY = clientY - rect.top;
+    const mouse = this.getMousePos(event);
+    this.canvas.style.cursor = "default";
 
-    const worldX = (canvasX - this.offsetX) / this.scale;
-    const worldY = (canvasY - this.offsetY) / this.scale;
+    const worldX = (mouse.x - this.offsetX) / this.scale;
+    const worldY = (mouse.y - this.offsetY) / this.scale;
     this.worldX = worldX;
     this.worldY = worldY;
 
@@ -149,12 +147,12 @@ export class InfiniteCanvas {
       // Show context menu on right click
       for (const element of this.elements) {
         if (element.containsPoint(worldX, worldY)) {
-          this.setContextMenu(element as Node, canvasX, canvasY);
+          this.setContextMenu(element as Node, mouse.x, mouse.y);
           return;
         }
       }
 
-      this.canvasContextMenu(canvasX, canvasY, worldX, worldY);
+      this.canvasContextMenu(mouse.x, mouse.y, worldX, worldY);
       return;
     }
 
@@ -173,8 +171,26 @@ export class InfiniteCanvas {
     }
 
     this.isPanning = true;
-    this.startX = canvasX - this.offsetX;
-    this.startY = canvasY - this.offsetY;
+    this.startX = mouse.x - this.offsetX;
+    this.startY = mouse.y - this.offsetY;
+  }
+
+  /**
+   * Gets the mouse position on the canvas.
+   *
+   * @param evt - The mouse event object.
+   * @returns An object containing the x and y coordinates of the mouse.
+   */
+  getMousePos(evt: MouseEvent) {
+    var rect = this.canvas.getBoundingClientRect();
+    return {
+      x:
+        ((evt.clientX - rect.left) / (rect.right - rect.left)) *
+        this.canvas.width,
+      y:
+        ((evt.clientY - rect.top) / (rect.bottom - rect.top)) *
+        this.canvas.height,
+    };
   }
 
   /**
@@ -184,26 +200,22 @@ export class InfiniteCanvas {
    * @param event - The mouse move event.
    */
   onMouseMove(event: MouseEvent) {
+    const mouse = this.getMousePos(event);
     this.canvas.style.cursor = "default";
-    const rect = this.canvas.getBoundingClientRect();
-    const canvasX = event.clientX - rect.left;
-    const canvasY = event.clientY - rect.top;
+
+    const worldX = (mouse.x - this.offsetX) / this.scale;
+    const worldY = (mouse.y - this.offsetY) / this.scale;
 
     if (this.isPanning) {
       this.canvas.style.cursor = "grabbing";
 
-      this.offsetX = canvasX - this.startX;
-      this.offsetY = canvasY - this.startY;
+      this.offsetX = mouse.x - this.startX;
+      this.offsetY = mouse.y - this.startY;
     } else if (this.draggingElement) {
       this.canvas.style.cursor = "grabbing";
-      const worldX = (canvasX - this.offsetX) / this.scale;
-      const worldY = (canvasY - this.offsetY) / this.scale;
       this.draggingElement.onDragMove(worldX, worldY);
     } else {
       // Check if the cursor is hovering over an element
-      const worldX = (canvasX - this.offsetX) / this.scale;
-      const worldY = (canvasY - this.offsetY) / this.scale;
-
       for (const element of this.elements) {
         if (element.containsPoint(worldX, worldY)) {
           this.canvas.style.cursor = "pointer";

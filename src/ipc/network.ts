@@ -1,4 +1,4 @@
-const createNetwork = global.share.ipcMain.handle("getNamespaces", async () => {
+const createProject = global.share.ipcMain.handle("createProject", async () => {
   try {
     // Create a new network
   } catch (err) {
@@ -7,6 +7,17 @@ const createNetwork = global.share.ipcMain.handle("getNamespaces", async () => {
   }
 });
 
+const loadProjects = global.share.ipcMain.handle("loadProjects", async () => {
+  try {
+    // Load all projects
+    console.log("Loading projects");
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+});
+
 module.exports = {
-  createNetwork,
+  createProject,
+  loadProjects,
 };

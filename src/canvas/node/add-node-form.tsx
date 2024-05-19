@@ -17,9 +17,9 @@ export const AddNodeForm = ({
   existingServiceDefinition,
 }: AddNodeFormProps): IAddNodeForm => {
   const [isVisible, setIsVisible] = useState(false);
-  const [name, setName] = useState(existingServiceDefinition.name || "");
+  const [name, setName] = useState(existingServiceDefinition?.name || "");
   const [serviceType, setServiceType] = useState(
-    existingServiceDefinition.type || ""
+    existingServiceDefinition?.type || ""
   );
 
   const setVisibility = (isVisible: boolean) => {
@@ -39,7 +39,7 @@ export const AddNodeForm = ({
       id: id,
       x: worldCoordinates.x,
       y: worldCoordinates.y,
-      width: 250,
+      width: 175,
       height: 50,
       text: name,
       color: "#444",
