@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { ServiceDefinition } from "./types";
 import { Text } from "../text";
-import MenuAction from "../context-menu/menu-action";
-import InfiniteCanvas from "../infinite-canvas";
+import { InfiniteCanvas } from "../infinite-canvas";
 
 export interface IAddNodeForm extends JSX.Element {
   setVisibility(isVisible: boolean): void;
@@ -10,11 +9,18 @@ export interface IAddNodeForm extends JSX.Element {
 
 export type AddNodeFormProps = {
   canvas: InfiniteCanvas;
+  existingServiceDefinition?: ServiceDefinition;
 };
 
-export const AddNodeForm = ({ canvas }: AddNodeFormProps): IAddNodeForm => {
+export const AddNodeForm = ({
+  canvas,
+  existingServiceDefinition,
+}: AddNodeFormProps): IAddNodeForm => {
   const [isVisible, setIsVisible] = useState(false);
-  const [name, setName] = useState("");
+  const [name, setName] = useState(existingServiceDefinition.name || "");
+  const [serviceType, setServiceType] = useState(
+    existingServiceDefinition.type || ""
+  );
 
   const setVisibility = (isVisible: boolean) => {
     setIsVisible(isVisible);
@@ -22,6 +28,7 @@ export const AddNodeForm = ({ canvas }: AddNodeFormProps): IAddNodeForm => {
 
   const clearForm = () => {
     setName("");
+    setServiceType("");
   };
 
   const onSubmit = () => {

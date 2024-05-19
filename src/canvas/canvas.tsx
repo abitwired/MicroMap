@@ -2,9 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { InfiniteCanvas } from "./infinite-canvas";
 import { Text } from "./text";
 import { ContextMenu, IContextMenu } from "./context-menu/context-menu";
-import MenuAction from "./context-menu/menu-action";
-import LoadingIcon, { ILoadingIcon } from "./loading-icon";
-import AddNodeForm, { IAddNodeForm } from "./node/add-node-form";
+import { ILoadingIcon, LoadingIcon } from "./loading-icon";
+import { IAddNodeForm, AddNodeForm } from "./node/add-node-form";
 
 export const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
