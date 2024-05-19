@@ -1,11 +1,14 @@
-import Node from "./node";
+import { IMenuAction } from "./context-menu/menu-action";
+import Node from "./node/node";
 import { TextElement } from "./types";
 
 export class Text extends Node implements TextElement {
+  id: string;
   text: string;
   fontColor: string;
 
   constructor({
+    id,
     x,
     y,
     width,
@@ -13,7 +16,9 @@ export class Text extends Node implements TextElement {
     text,
     color,
     fontColor,
+    contextMenuActions,
   }: {
+    id: string;
     x: number;
     y: number;
     width: number;
@@ -21,8 +26,9 @@ export class Text extends Node implements TextElement {
     text: string;
     color: string;
     fontColor: string;
+    contextMenuActions?: IMenuAction[];
   }) {
-    super({ x, y, width, height, color });
+    super({ id, x, y, width, height, color, contextMenuActions });
     this.text = text;
     this.fontColor = fontColor;
   }

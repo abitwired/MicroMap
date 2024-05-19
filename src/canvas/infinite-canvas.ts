@@ -1,5 +1,6 @@
-import { ContextMenu, IContextMenu } from "./context-menu";
-import Node from "./node";
+import { IContextMenu } from "./context-menu/context-menu";
+import MenuAction from "./context-menu/menu-action";
+import Node from "./node/node";
 import { CanvasElement, DraggableElement, HoverableElement } from "./types";
 
 export class InfiniteCanvas {
@@ -50,6 +51,53 @@ export class InfiniteCanvas {
     this.draw();
   }
 
+  canvasContextMenu(x: number, y: number, worldX: number, worldY: number) {
+    const actions = [
+      MenuAction({
+        name: "Add Node",
+        onClick: () => {
+          const node = new Node({
+            id: `node-${Date.now()}`,
+            x: worldX,
+            y: worldY,
+            width: 100,
+            height: 50,
+            color: "#444",
+            contextMenuActions: [
+              MenuAction({
+                name: "Delete",
+                onClick: () => {
+                  this.deleteElement(node.getId());
+                  this.contextMenu.hide();
+                },
+              }),
+            ],
+          });
+          this.addElement(node);
+          this.contextMenu.hide();
+        },
+      }),
+    ];
+
+    this.contextMenu.updateActions(actions);
+    this.contextMenu.show(x, y);
+  }
+
+  setContextMenu(node: Node, worldX: number, worldY: number) {
+    const actions = node.getContextMenuActions();
+    if (actions.length > 0) {
+      this.contextMenu.updateActions(actions);
+      this.contextMenu.show(worldX, worldY);
+    }
+  }
+
+  deleteElement(elementId: string) {
+    this.elements = this.elements.filter(
+      (element) => element.getId() !== elementId
+    );
+    this.draw();
+  }
+
   onMouseDown(event: MouseEvent) {
     const { clientX, clientY } = event;
     const rect = this.canvas.getBoundingClientRect();
@@ -59,15 +107,19 @@ export class InfiniteCanvas {
     const worldX = (canvasX - this.offsetX) / this.scale;
     const worldY = (canvasY - this.offsetY) / this.scale;
 
-    // Hide context menu on left click
     if (event.button === 0) {
+      // Hide context menu on left click
       this.contextMenu.hide();
     } else if (event.button === 2) {
+      // Show context menu on right click
       for (const element of this.elements) {
         if (element.containsPoint(worldX, worldY)) {
-          this.contextMenu.show(element as Node);
+          this.setContextMenu(element as Node, canvasX, canvasY);
+          return;
         }
       }
+
+      this.canvasContextMenu(canvasX, canvasY, worldX, worldY);
       return;
     }
 

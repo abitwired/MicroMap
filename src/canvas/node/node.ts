@@ -1,34 +1,42 @@
-import BaseElement from "./base-element";
-import { DraggableElement, HoverableElement } from "./types";
+import BaseElement from "../base-element";
+import MenuAction, { IMenuAction } from "../context-menu/menu-action";
+import { DraggableElement, HoverableElement } from "../types";
 
 export class Node
   extends BaseElement
   implements DraggableElement, HoverableElement
 {
+  id: string;
   radius: number;
   color: string;
   dragOffsetX: number;
   dragOffsetY: number;
   isHovered: boolean = false;
+  contextMenuActions: IMenuAction[] = [];
 
   constructor({
+    id,
     x,
     y,
     width,
     height,
     color,
+    contextMenuActions,
   }: {
+    id: string;
     x: number;
     y: number;
     width: number;
     height: number;
     color: string;
+    contextMenuActions?: IMenuAction[];
   }) {
-    super(x, y, width, height);
+    super(id, x, y, width, height);
     this.radius = 10;
     this.color = color;
     this.dragOffsetX = 0;
     this.dragOffsetY = 0;
+    this.contextMenuActions = contextMenuActions || [];
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -95,6 +103,10 @@ export class Node
   onDragEnd() {
     this.dragOffsetX = 0;
     this.dragOffsetY = 0;
+  }
+
+  getContextMenuActions(): IMenuAction[] {
+    return this.contextMenuActions;
   }
 }
 
