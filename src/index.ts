@@ -8,7 +8,6 @@ import contextMenu from "electron-context-menu";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
-
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
   app.quit();
@@ -18,7 +17,7 @@ const createWindow = (): void => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1600,
-    height: 1000,
+    height: 900,
     autoHideMenuBar: true,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
@@ -32,7 +31,7 @@ const createWindow = (): void => {
   mainWindow.webContents.openDevTools();
 
   // Add an item to the context menu that appears only when you click on an image
-  contextMenu({});
+  // contextMenu({});
 };
 
 // This method will be called when Electron has finished

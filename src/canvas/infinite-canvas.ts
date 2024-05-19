@@ -1,4 +1,6 @@
-import { CanvasElement, EditableCanvasElement } from "./types";
+import { ContextMenu, IContextMenu } from "./context-menu";
+import Node from "./node";
+import { CanvasElement, DraggableElement, HoverableElement } from "./types";
 
 export class InfiniteCanvas {
   canvas: HTMLCanvasElement;
@@ -10,9 +12,10 @@ export class InfiniteCanvas {
   isPanning: boolean;
   startX: number;
   startY: number;
-  draggingElement: CanvasElement | null;
+  draggingElement: DraggableElement | null;
+  contextMenu: IContextMenu;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, contextMenu: IContextMenu) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.elements = [];
@@ -23,6 +26,7 @@ export class InfiniteCanvas {
     this.startX = 0;
     this.startY = 0;
     this.draggingElement = null;
+    this.contextMenu = contextMenu;
 
     this.initialize();
   }
@@ -48,51 +52,82 @@ export class InfiniteCanvas {
 
   onMouseDown(event: MouseEvent) {
     const { clientX, clientY } = event;
-    const worldX = (clientX - this.offsetX) / this.scale;
-    const worldY = (clientY - this.offsetY) / this.scale;
+    const rect = this.canvas.getBoundingClientRect();
+    const canvasX = clientX - rect.left;
+    const canvasY = clientY - rect.top;
+
+    const worldX = (canvasX - this.offsetX) / this.scale;
+    const worldY = (canvasY - this.offsetY) / this.scale;
+
+    // Hide context menu on left click
+    if (event.button === 0) {
+      this.contextMenu.hide();
+    } else if (event.button === 2) {
+      for (const element of this.elements) {
+        if (element.containsPoint(worldX, worldY)) {
+          this.contextMenu.show(element as Node);
+        }
+      }
+      return;
+    }
 
     // Set cursor to grabbing
     this.canvas.style.cursor = "grabbing";
 
     for (const element of this.elements) {
       if (element.containsPoint(worldX, worldY)) {
-        if ("containsTextPoint" in element) {
-          const editableElement = element as EditableCanvasElement;
-          if (editableElement.containsTextPoint(worldX, worldY)) {
-          console.log(editableElement);
-            editableElement.startEditingText(
-              this.ctx,
-              this.offsetX,
-              this.offsetY,
-              this.scale
-            );
-            return;
-          }
+        if ("onDragStart" in element) {
+          const draggableElement = element as unknown as DraggableElement;
+          this.draggingElement = draggableElement;
+          draggableElement.onDragStart(worldX, worldY);
+          return;
         }
-
-        this.draggingElement = element;
-        element.onDragStart(worldX, worldY);
-        return;
       }
     }
 
     this.isPanning = true;
-    this.startX = clientX - this.offsetX;
-    this.startY = clientY - this.offsetY;
+    this.startX = canvasX - this.offsetX;
+    this.startY = canvasY - this.offsetY;
   }
 
   onMouseMove(event: MouseEvent) {
+    this.canvas.style.cursor = "default";
+    const rect = this.canvas.getBoundingClientRect();
+    const canvasX = event.clientX - rect.left;
+    const canvasY = event.clientY - rect.top;
+
     if (this.isPanning) {
-      this.offsetX = event.clientX - this.startX;
-      this.offsetY = event.clientY - this.startY;
-      this.draw();
+      this.canvas.style.cursor = "grabbing";
+
+      this.offsetX = canvasX - this.startX;
+      this.offsetY = canvasY - this.startY;
     } else if (this.draggingElement) {
-      const { clientX, clientY } = event;
-      const worldX = (clientX - this.offsetX) / this.scale;
-      const worldY = (clientY - this.offsetY) / this.scale;
+      this.canvas.style.cursor = "grabbing";
+      const worldX = (canvasX - this.offsetX) / this.scale;
+      const worldY = (canvasY - this.offsetY) / this.scale;
       this.draggingElement.onDragMove(worldX, worldY);
-      this.draw();
+    } else {
+      // Check if the cursor is hovering over an element
+      const worldX = (canvasX - this.offsetX) / this.scale;
+      const worldY = (canvasY - this.offsetY) / this.scale;
+
+      for (const element of this.elements) {
+        if (element.containsPoint(worldX, worldY)) {
+          this.canvas.style.cursor = "pointer";
+          if ("onHover" in element) {
+            const draggableElement = element as unknown as HoverableElement;
+            draggableElement.onHover();
+          }
+        } else {
+          if ("hoverOff" in element) {
+            const draggableElement = element as unknown as HoverableElement;
+            draggableElement.hoverOff();
+          }
+        }
+      }
     }
+
+    this.draw();
   }
 
   onMouseUp() {
@@ -109,8 +144,9 @@ export class InfiniteCanvas {
   zoom(event: WheelEvent) {
     event.preventDefault();
     const scaleFactor = 1.1;
-    const mouseX = event.clientX;
-    const mouseY = event.clientY;
+    const rect = this.canvas.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left;
+    const mouseY = event.clientY - rect.top;
     const zoomIn = event.deltaY < 0;
 
     const worldX = (mouseX - this.offsetX) / this.scale;
