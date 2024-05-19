@@ -1,8 +1,13 @@
 import { IContextMenu } from "./context-menu/context-menu";
 import MenuAction from "./context-menu/menu-action";
+import { ILoadingIcon } from "./loading-icon";
+import { IAddNodeForm } from "./node/add-node-form";
 import Node from "./node/node";
 import { CanvasElement, DraggableElement, HoverableElement } from "./types";
 
+/**
+ * Represents an infinite canvas that allows panning, zooming, and drawing elements.
+ */
 export class InfiniteCanvas {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
@@ -15,8 +20,19 @@ export class InfiniteCanvas {
   startY: number;
   draggingElement: DraggableElement | null;
   contextMenu: IContextMenu;
+  saveInterval: NodeJS.Timeout | null;
+  savePendingInterval: NodeJS.Timeout | null;
+  loadingIcon: ILoadingIcon;
+  addNodeForm: IAddNodeForm;
+  worldX: number;
+  worldY: number;
 
-  constructor(canvas: HTMLCanvasElement, contextMenu: IContextMenu) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    contextMenu: IContextMenu,
+    loadingIcon: ILoadingIcon,
+    addNodeForm: IAddNodeForm
+  ) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.elements = [];
@@ -28,6 +44,8 @@ export class InfiniteCanvas {
     this.startY = 0;
     this.draggingElement = null;
     this.contextMenu = contextMenu;
+    this.loadingIcon = loadingIcon;
+    this.addNodeForm = addNodeForm;
 
     this.initialize();
   }
@@ -41,8 +59,8 @@ export class InfiniteCanvas {
       passive: false,
     });
 
-    this.resizeCanvas();
     this.draw();
+    this.resizeCanvas();
   }
 
   resizeCanvas() {
@@ -51,29 +69,20 @@ export class InfiniteCanvas {
     this.draw();
   }
 
+  /**
+   * Displays the context menu on the canvas at the specified coordinates.
+   *
+   * @param x - The x-coordinate of the context menu.
+   * @param y - The y-coordinate of the context menu.
+   * @param worldX - The x-coordinate of the context menu in world coordinates.
+   * @param worldY - The y-coordinate of the context menu in world coordinates.
+   */
   canvasContextMenu(x: number, y: number, worldX: number, worldY: number) {
     const actions = [
       MenuAction({
         name: "Add Node",
         onClick: () => {
-          const node = new Node({
-            id: `node-${Date.now()}`,
-            x: worldX,
-            y: worldY,
-            width: 100,
-            height: 50,
-            color: "#444",
-            contextMenuActions: [
-              MenuAction({
-                name: "Delete",
-                onClick: () => {
-                  this.deleteElement(node.getId());
-                  this.contextMenu.hide();
-                },
-              }),
-            ],
-          });
-          this.addElement(node);
+          this.addNodeForm.setVisibility(true);
           this.contextMenu.hide();
         },
       }),
@@ -83,6 +92,19 @@ export class InfiniteCanvas {
     this.contextMenu.show(x, y);
   }
 
+  /**
+   * Hides the context menu.
+   */
+  hideContextMenu() {
+    this.contextMenu.hide();
+  }
+
+  /**
+   * Sets the context menu for a given node at the specified world coordinates.
+   * @param node - The node for which to set the context menu.
+   * @param worldX - The x-coordinate in the world space.
+   * @param worldY - The y-coordinate in the world space.
+   */
   setContextMenu(node: Node, worldX: number, worldY: number) {
     const actions = node.getContextMenuActions();
     if (actions.length > 0) {
@@ -91,13 +113,24 @@ export class InfiniteCanvas {
     }
   }
 
+  /**
+   * Deletes an element from the canvas.
+   *
+   * @param elementId - The ID of the element to delete.
+   */
   deleteElement(elementId: string) {
     this.elements = this.elements.filter(
       (element) => element.getId() !== elementId
     );
     this.draw();
+    this.save();
   }
 
+  /**
+   * Handles the mouse down event on the canvas.
+   *
+   * @param event - The mouse event object.
+   */
   onMouseDown(event: MouseEvent) {
     const { clientX, clientY } = event;
     const rect = this.canvas.getBoundingClientRect();
@@ -106,6 +139,8 @@ export class InfiniteCanvas {
 
     const worldX = (canvasX - this.offsetX) / this.scale;
     const worldY = (canvasY - this.offsetY) / this.scale;
+    this.worldX = worldX;
+    this.worldY = worldY;
 
     if (event.button === 0) {
       // Hide context menu on left click
@@ -142,6 +177,12 @@ export class InfiniteCanvas {
     this.startY = canvasY - this.offsetY;
   }
 
+  /**
+   * Handles the mouse move event on the canvas.
+   * Updates the cursor style, performs panning or dragging of elements,
+   * and checks if the cursor is hovering over an element.
+   * @param event - The mouse move event.
+   */
   onMouseMove(event: MouseEvent) {
     this.canvas.style.cursor = "default";
     const rect = this.canvas.getBoundingClientRect();
@@ -182,6 +223,9 @@ export class InfiniteCanvas {
     this.draw();
   }
 
+  /**
+   * Handles the mouse up event.
+   */
   onMouseUp() {
     this.canvas.style.cursor = "default";
     if (this.isPanning) {
@@ -189,10 +233,15 @@ export class InfiniteCanvas {
     }
     if (this.draggingElement) {
       this.draggingElement.onDragEnd();
+      this.save();
       this.draggingElement = null;
     }
   }
 
+  /**
+   * Zooms the canvas based on the provided wheel event.
+   * @param event - The wheel event.
+   */
   zoom(event: WheelEvent) {
     event.preventDefault();
     const scaleFactor = 1.1;
@@ -212,11 +261,23 @@ export class InfiniteCanvas {
     this.draw();
   }
 
+  /**
+   * Adds a canvas element to the infinite canvas.
+   * @param element - The canvas element to be added.
+   */
   addElement(element: CanvasElement) {
     this.elements.push(element);
     this.draw();
+    this.save();
   }
 
+  getWorldCoordinates() {
+    return { x: this.worldX, y: this.worldY };
+  }
+
+  /**
+   * Draws a grid on the canvas.
+   */
   drawGrid() {
     const gridSize = 50;
 
@@ -239,6 +300,9 @@ export class InfiniteCanvas {
     }
   }
 
+  /**
+   * Draws all the elements on the canvas.
+   */
   drawElements() {
     this.elements.forEach((element) => {
       this.ctx.save();
@@ -249,6 +313,9 @@ export class InfiniteCanvas {
     });
   }
 
+  /**
+   * Clears the canvas and redraws the grid and elements.
+   */
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -258,6 +325,27 @@ export class InfiniteCanvas {
 
     this.drawGrid();
     this.drawElements();
+  }
+
+  /**
+   * Saves the current state of the canvas.
+   */
+  save() {
+    if (this.saveInterval) {
+      clearInterval(this.saveInterval);
+    }
+
+    if (this.savePendingInterval) {
+      clearInterval(this.savePendingInterval);
+    }
+
+    this.savePendingInterval = setTimeout(() => {
+      this.loadingIcon.setVisibility(true);
+
+      this.saveInterval = setTimeout(() => {
+        this.loadingIcon.setVisibility(false);
+      }, 5_000);
+    }, 5_000);
   }
 }
 

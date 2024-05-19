@@ -3,19 +3,28 @@ import { InfiniteCanvas } from "./infinite-canvas";
 import { Text } from "./text";
 import { ContextMenu, IContextMenu } from "./context-menu/context-menu";
 import MenuAction from "./context-menu/menu-action";
+import LoadingIcon, { ILoadingIcon } from "./loading-icon";
+import AddNodeForm, { IAddNodeForm } from "./node/add-node-form";
 
 export const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const contextMenuRef = useRef<IContextMenu>();
+  const loadingRef = useRef<ILoadingIcon>();
+  const addNodeFormRef = useRef<IAddNodeForm>();
+
   const [canvas, setCanvas] = useState<InfiniteCanvas | null>(null);
 
   contextMenuRef.current = ContextMenu();
+  loadingRef.current = LoadingIcon();
+  addNodeFormRef.current = AddNodeForm({ canvas });
 
   useEffect(() => {
     if (canvasRef.current) {
       const canvas = new InfiniteCanvas(
         canvasRef.current,
-        contextMenuRef.current
+        contextMenuRef.current,
+        loadingRef.current,
+        addNodeFormRef.current
       );
       const node = new Text({
         id: "text-element-1",
@@ -23,18 +32,10 @@ export const Canvas = () => {
         y: 300,
         width: 175,
         height: 50,
-        text: "hello world",
+        text: "hello world #1",
         color: "#444",
         fontColor: "white",
-        contextMenuActions: [
-          MenuAction({
-            name: "Delete",
-            onClick: () => {
-              canvas.deleteElement("text-element-1");
-              contextMenuRef.current?.hide();
-            },
-          }),
-        ],
+        canvas,
       });
 
       const node2 = new Text({
@@ -43,18 +44,10 @@ export const Canvas = () => {
         y: 300,
         width: 175,
         height: 50,
-        text: "hello world",
+        text: "hello world #2",
         color: "#444",
         fontColor: "white",
-        contextMenuActions: [
-          MenuAction({
-            name: "Delete",
-            onClick: () => {
-              canvas.deleteElement("text-element-2");
-              contextMenuRef.current?.hide();
-            },
-          }),
-        ],
+        canvas,
       });
 
       canvas.addElement(node);
@@ -66,11 +59,15 @@ export const Canvas = () => {
   return (
     <>
       {contextMenuRef.current}
-      <canvas
-        id="canvas"
-        className="w-full rounded-md"
-        ref={canvasRef}
-      ></canvas>
+      <div>
+        {loadingRef.current}
+        {addNodeFormRef.current}
+        <canvas
+          id="canvas"
+          className="w-full rounded-md"
+          ref={canvasRef}
+        ></canvas>
+      </div>
     </>
   );
 };
