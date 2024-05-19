@@ -74,10 +74,8 @@ export class InfiniteCanvas {
    *
    * @param x - The x-coordinate of the context menu.
    * @param y - The y-coordinate of the context menu.
-   * @param worldX - The x-coordinate of the context menu in world coordinates.
-   * @param worldY - The y-coordinate of the context menu in world coordinates.
    */
-  canvasContextMenu(x: number, y: number, worldX: number, worldY: number) {
+  canvasContextMenu(x: number, y: number) {
     const actions = [
       MenuAction({
         name: "Add Node",
@@ -102,14 +100,14 @@ export class InfiniteCanvas {
   /**
    * Sets the context menu for a given node at the specified world coordinates.
    * @param node - The node for which to set the context menu.
-   * @param worldX - The x-coordinate in the world space.
-   * @param worldY - The y-coordinate in the world space.
+   * @param screenX - The x-coordinate in the screen space.
+   * @param screenY - The y-coordinate in the screen space.
    */
-  setContextMenu(node: Node, worldX: number, worldY: number) {
+  setContextMenu(node: Node, screenX: number, screenY: number) {
     const actions = node.getContextMenuActions();
     if (actions.length > 0) {
       this.contextMenu.updateActions(actions);
-      this.contextMenu.show(worldX, worldY);
+      this.contextMenu.show(screenX, screenY);
     }
   }
 
@@ -147,12 +145,12 @@ export class InfiniteCanvas {
       // Show context menu on right click
       for (const element of this.elements) {
         if (element.containsPoint(worldX, worldY)) {
-          this.setContextMenu(element as Node, mouse.x, mouse.y);
+          this.setContextMenu(element as Node, event.clientX, event.clientY);
           return;
         }
       }
 
-      this.canvasContextMenu(mouse.x, mouse.y, worldX, worldY);
+      this.canvasContextMenu(event.clientX, event.clientY);
       return;
     }
 

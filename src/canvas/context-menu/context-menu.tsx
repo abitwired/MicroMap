@@ -16,7 +16,6 @@ export const ContextMenu = (): IContextMenu => {
   const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
   const [isVisible, setIsVisible] = useState(false);
   const [actions, setActions] = useState<IMenuAction[]>([]);
-  const offsetPixels = 30;
 
   /**
    * Displays the context menu at the specified coordinates.
@@ -26,8 +25,8 @@ export const ContextMenu = (): IContextMenu => {
    */
   const show = (worldX: number, worldY: number) => {
     setCoordinates({
-      x: worldX + offsetPixels,
-      y: worldY + offsetPixels,
+      x: worldX,
+      y: worldY,
     });
     setIsVisible(true);
   };

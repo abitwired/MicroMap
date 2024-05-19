@@ -107,12 +107,4 @@ export class Text extends Node implements TextElement {
       );
     });
   }
-
-  /**
-   * Handles the double click event on the text element.
-   * @param e - The mouse event object.
-   */
-  onDoubleClick(e: MouseEvent): void {
-    console.log("Double clicked!");
-  }
 }

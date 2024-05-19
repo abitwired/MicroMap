@@ -64,17 +64,6 @@ export class BaseElement implements CanvasElement {
       worldX <= this.x + this.width &&
       worldY >= this.y &&
       worldY <= this.y + this.height;
-
-    console.log(`
-    Point: (${worldX}, ${worldY})
-    Element: (${this.x}, ${this.y}, ${this.width}, ${this.height})
-    Point inside element: ${pointInsideElement}
-    Condition checks: 
-      worldX >= this.x: ${worldX >= this.x}
-      worldX <= this.x + this.width: ${worldX <= this.x + this.width}
-      worldY >= this.y: ${worldY >= this.y}
-      worldY <= this.y + this.height: ${worldY <= this.y + this.height}`);
-
     return pointInsideElement;
   }
 }
