@@ -38,7 +38,7 @@ export const Canvas = () => {
         {addNodeFormRef.current}
         <canvas
           id="canvas"
-          className="w-full rounded-md"
+          className="w-full rounded-md h-dvh"
           ref={canvasRef}
         ></canvas>
       </div>

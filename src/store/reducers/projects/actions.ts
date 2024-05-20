@@ -1,15 +1,14 @@
-import { ActionMap } from "../../types";
+import { ActionMap, Project } from "../../types";
 
 export enum Types {
   Create = "CREATE_PROJECT",
   Delete = "DELETE_PROJECT",
+  Update = "UPDATE_PROJECT",
 }
 
 export type ProjectPayload = {
-  [Types.Create]: {
-    id: string;
-    name: string;
-  };
+  [Types.Create]: Project;
+  [Types.Update]: Project;
   [Types.Delete]: {
     id: string;
   };

@@ -11,6 +11,12 @@ export const projectReducer = (state: Project[], action: ProjectActions) => {
   switch (action.type) {
     case Types.Create:
       return [...state, action.payload];
+    case Types.Update:
+      return [
+        ...state.map((project: Project) =>
+          project.id === action.payload.id ? action.payload : project
+        ),
+      ];
     case Types.Delete:
       return [
         ...state.filter((project: Project) => project.id !== action.payload.id),

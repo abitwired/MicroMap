@@ -12,7 +12,7 @@ const DEFAULT_STATE: Store = {
 
 const AppContext = createContext<{
   state: Store;
-  dispatch: React.Dispatch<ProjectActions | AppActions>;
+  dispatch: React.Dispatch<any>;
 }>({
   state: DEFAULT_STATE,
   dispatch: () => null,

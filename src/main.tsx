@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Canvas } from "./canvas/canvas";
 import { Sidebar } from "./components/sidebar/Sidebar";
 import { AppProvider } from "./store/app-provider";
 import { Store } from "./store/types";
+import { CurrentProject } from "./components/CurrentProject";
 
 export const Main = () => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -51,11 +51,9 @@ export const Main = () => {
 
   return (
     <AppProvider initialState={{ ...initialState }}>
-      <div className="flex m-2 gap-2">
+      <div className="lg:flex m-2 gap-2">
         <Sidebar />
-        <div className="flex justify-between">
-          <Canvas />
-        </div>
+        <CurrentProject />
       </div>
     </AppProvider>
   );

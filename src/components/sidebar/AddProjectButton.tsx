@@ -6,15 +6,13 @@ export const AddProjectButton = () => {
   const { state, dispatch } = useContext(AppContext);
 
   const onClick = () => {
-    const project = {
-      id: new Date().toISOString(),
-      name: `Project ${state.projects.length + 1}`,
-    };
     dispatch({
       type: Types.Create,
       payload: {
-        id: project.id,
-        name: project.name,
+        id: new Date().toISOString(),
+        name: `Untitled Project`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     });
   };

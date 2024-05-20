@@ -20,6 +20,29 @@ const createProject = global.share.ipcMain.handle("createProject", async () => {
   }
 });
 
+const saveProject = global.share.ipcMain.handle(
+  "saveProject",
+  async (_event, project: Project) => {
+    try {
+      const fs = require("fs");
+      const updatedProject = {
+        ...project,
+        updatedAt: new Date().toISOString(),
+      };
+
+      const projectPath = `${global.share.appDirectory}/projects/`;
+      fs.mkdirSync(projectPath, { recursive: true });
+
+      const filePath = `${projectPath}/${project.id}.json`;
+      fs.writeFileSync(filePath, JSON.stringify(updatedProject));
+      return updatedProject;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
+);
+
 const loadProjects = global.share.ipcMain.handle("loadProjects", async () => {
   try {
     const fs = require("fs");
@@ -38,7 +61,7 @@ const loadProjects = global.share.ipcMain.handle("loadProjects", async () => {
             if (err) {
               reject(err);
             } else {
-              resolve(JSON.parse(data));
+              resolve(JSON.parse(data) as Project);
             }
           });
         })
@@ -77,4 +100,5 @@ module.exports = {
   createProject,
   loadProjects,
   deleteProject,
+  saveProject,
 };

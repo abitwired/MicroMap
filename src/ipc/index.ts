@@ -1,2 +1,2 @@
-const { network } = require("./network");
-export { network };
+const { project } = require("./project");
+export { project };
