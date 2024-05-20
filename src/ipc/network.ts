@@ -1,4 +1,4 @@
-import { Project } from "./types";
+import { Project } from "../store/types";
 
 const createProject = global.share.ipcMain.handle("createProject", async () => {
   try {

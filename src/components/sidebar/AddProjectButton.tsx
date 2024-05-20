@@ -1,11 +1,21 @@
+import { useContext } from "react";
+import { AppContext } from "../../store/app-provider";
+import { Types } from "../../store/reducers/projects/actions";
+
 export const AddProjectButton = () => {
+  const { state, dispatch } = useContext(AppContext);
+
   const onClick = () => {
-    api.createProject();
+    const project = {
+      id: state.projects.length + 1,
+      name: `Project ${state.projects.length + 1}`,
+    };
+    dispatch({ type: Types.Create, payload: project });
   };
 
   return (
     <button
-      className="ml-auto hover:bg-gray-700 p-1 rounded-md transition-colors duration-100 ease-in-out
+      className="ml-auto hover:bg-emerald-700 p-1 rounded-md transition-colors duration-100 ease-in-out
     "
       onClick={onClick}
     >
