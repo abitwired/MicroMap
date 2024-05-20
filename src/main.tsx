@@ -7,17 +7,18 @@ import { Store } from "./store/types";
 export const Main = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [initialState, setInitialState] = useState<Store>({
+    app: null,
     projects: [],
   });
 
-  const getProjects = async () => {
+  const loadInitialState = async () => {
     const projects = await api.loadProjects();
-    setInitialState({ projects });
+    setInitialState({ ...initialState, projects });
     setLoading(false);
   };
 
   useEffect(() => {
-    getProjects();
+    loadInitialState();
   }, []);
 
   if (loading) {

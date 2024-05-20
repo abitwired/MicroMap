@@ -6,7 +6,6 @@ import { AppContext } from "../../store/app-provider";
 export const Sidebar = () => {
   const { state } = useContext(AppContext);
 
-  console.log(state);
   return (
     <div className="w-1/4 h-full bg-zinc-800 p-4 rounded-md">
       <div className="text-white text-xl font-bold flex mb-2">

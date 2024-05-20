@@ -13,6 +13,8 @@ export class InfiniteCanvas {
   ctx: CanvasRenderingContext2D;
   elements: CanvasElement[];
   scale: number;
+  minScale: number;
+  maxScale: number;
   offsetX: number;
   offsetY: number;
   isPanning: boolean;
@@ -37,6 +39,8 @@ export class InfiniteCanvas {
     this.ctx = canvas.getContext("2d");
     this.elements = [];
     this.scale = 1;
+    this.minScale = 0.5;
+    this.maxScale = 5;
     this.offsetX = 0;
     this.offsetY = 0;
     this.isPanning = false;
@@ -254,6 +258,10 @@ export class InfiniteCanvas {
    */
   zoom(event: WheelEvent) {
     event.preventDefault();
+
+    if (this.maxScale <= this.scale && event.deltaY < 0) return;
+    if (this.minScale >= this.scale && event.deltaY > 0) return;
+
     const scaleFactor = 1.1;
     const rect = this.canvas.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;

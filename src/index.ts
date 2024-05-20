@@ -45,17 +45,6 @@ const createWindow = (): void => {
 
   // Add an item to the context menu that appears only when you click on an image
   contextMenu({
-    // prepend: (defaultActions, params) => [
-    //   {
-    //     label: "Rainbow",
-    //     // Only show it when right-clicking images
-    //     visible: params.mediaType === "canvas",
-    //     // Click handler
-    //     click: () => {
-    //       console.log(params.srcURL);
-    //     },
-    //   },
-    // ],
     shouldShowMenu(event, parameters) {
       if (parameters.mediaType === "canvas") {
         return false;

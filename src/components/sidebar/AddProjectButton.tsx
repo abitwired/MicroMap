@@ -7,10 +7,16 @@ export const AddProjectButton = () => {
 
   const onClick = () => {
     const project = {
-      id: state.projects.length + 1,
+      id: new Date().toISOString(),
       name: `Project ${state.projects.length + 1}`,
     };
-    dispatch({ type: Types.Create, payload: project });
+    dispatch({
+      type: Types.Create,
+      payload: {
+        id: project.id,
+        name: project.name,
+      },
+    });
   };
 
   return (
