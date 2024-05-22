@@ -6,6 +6,8 @@ import Node from "./node/node";
 import { CanvasElement, DraggableElement, HoverableElement } from "./types";
 import { Project } from "../store/types";
 import { Text } from "./text";
+import { NodeConnector } from "./node/node-connector";
+import ConnectionCurve from "./node/connection-curve";
 
 /**
  * Represents an infinite canvas that allows panning, zooming, and drawing elements.
@@ -23,11 +25,14 @@ export class InfiniteCanvas {
   startX: number;
   startY: number;
   draggingElement: DraggableElement | null;
+  connector: NodeConnector | null;
+  creatingConnection: boolean = false;
   contextMenu: IContextMenu;
   saveInterval: NodeJS.Timeout | null;
   savePendingInterval: NodeJS.Timeout | null;
   loadingIcon: ILoadingIcon;
   addNodeForm: IAddNodeForm;
+  connectionCurve: ConnectionCurve = new ConnectionCurve();
   worldX: number;
   worldY: number;
 
@@ -135,6 +140,18 @@ export class InfiniteCanvas {
     this.draw();
   }
 
+  startConnection(node: Node, worldX: number, worldY: number) {
+    if (node.intoNodeConnection.containsPoint(worldX, worldY)) {
+      this.connector = node.intoNodeConnection;
+      this.connectionCurve.startX = node.intoNodeConnection.x;
+      this.connectionCurve.startY = node.intoNodeConnection.y;
+    } else if (node.outNodeConnection.containsPoint(worldX, worldY)) {
+      this.connector = node.outNodeConnection;
+      this.connectionCurve.startX = node.outNodeConnection.x;
+      this.connectionCurve.startY = node.outNodeConnection.y;
+    }
+  }
+
   /**
    * Handles the mouse down event on the canvas.
    *
@@ -152,6 +169,28 @@ export class InfiniteCanvas {
     if (event.button === 0) {
       // Hide context menu on left click
       this.contextMenu.hide();
+
+      for (const element of this.elements) {
+        if (element.containsPoint(worldX, worldY)) {
+          // We've clicked on an NodeConnector
+          if (element instanceof Node) {
+            const node = element as Node;
+            if (this.creatingConnection) {
+              this.creatingConnection = false;
+              this.connector = null;
+            } else {
+              if (
+                node.intoNodeConnection.containsPoint(worldX, worldY) ||
+                node.outNodeConnection.containsPoint(worldX, worldY)
+              ) {
+                this.creatingConnection = true;
+                this.startConnection(node, worldX, worldY);
+                return;
+              }
+            }
+          }
+        }
+      }
     } else if (event.button === 2) {
       // Show context menu on right click
       for (const element of this.elements) {
@@ -239,6 +278,13 @@ export class InfiniteCanvas {
           }
         }
       }
+    }
+
+    if (this.connector) {
+      this.connectionCurve.startX = this.connector.x;
+      this.connectionCurve.startY = this.connector.y;
+      this.connectionCurve.endX = worldX;
+      this.connectionCurve.endY = worldY;
     }
 
     this.draw();
@@ -349,6 +395,15 @@ export class InfiniteCanvas {
 
     this.drawGrid();
     this.drawElements();
+    this.drawConnectionCurve();
+  }
+
+  drawConnectionCurve() {
+    this.ctx.save();
+    this.ctx.translate(this.offsetX, this.offsetY);
+    this.ctx.scale(this.scale, this.scale);
+    this.connectionCurve.draw(this.ctx);
+    this.ctx.restore();
   }
 
   /**

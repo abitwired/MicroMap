@@ -1,6 +1,7 @@
 import BaseElement from "../base-element";
-import { IMenuAction } from "../context-menu/menu-action";
 import { DraggableElement, HoverableElement } from "../types";
+import ConnectionCurve from "./connection-curve";
+import { NodeConnector } from "./node-connector";
 
 /**
  * Represents a node in the canvas.
@@ -15,6 +16,10 @@ export class Node
   dragOffsetX: number;
   dragOffsetY: number;
   isHovered: boolean = false;
+  intoNodeConnection: NodeConnector = null;
+  outNodeConnection: NodeConnector = null;
+  inConnections: Node[] = [];
+  outConnections: Node[] = [];
 
   /**
    * Creates a new instance of the Node class.
@@ -45,6 +50,18 @@ export class Node
     this.color = color;
     this.dragOffsetX = 0;
     this.dragOffsetY = 0;
+    this.intoNodeConnection = new NodeConnector(
+      this.x,
+      this.y + this.height / 2,
+      this.radius,
+      this.color
+    );
+    this.outNodeConnection = new NodeConnector(
+      this.x + this.width,
+      this.y + this.height / 2,
+      this.radius,
+      this.color
+    );
   }
 
   /**
@@ -92,6 +109,11 @@ export class Node
     ctx.strokeStyle = "white";
     ctx.lineWidth = this.isHovered ? 2 : 1;
     ctx.stroke();
+
+    if (this.isHovered) {
+      this.intoNodeConnection.draw(ctx);
+      this.outNodeConnection.draw(ctx);
+    }
   }
 
   /**
@@ -126,6 +148,10 @@ export class Node
   onDragMove(x: number, y: number) {
     this.x = x - this.dragOffsetX;
     this.y = y - this.dragOffsetY;
+    this.intoNodeConnection.x = this.x;
+    this.intoNodeConnection.y = this.y + this.height / 2;
+    this.outNodeConnection.x = this.x + this.width;
+    this.outNodeConnection.y = this.y + this.height / 2;
   }
 
   /**
