@@ -1,10 +1,14 @@
 import { useState } from "react";
-import { IMenuAction } from "./menu-action";
+import MenuAction, { IMenuAction } from "./menu-action";
+import { Node } from "../node/node";
+import InfiniteCanvas from "../infinite-canvas";
+import { Text } from "../text";
 
 export interface IContextMenu extends JSX.Element {
   show(worldX: number, worldY: number): void;
   hide(): void;
   updateActions(newActions: IMenuAction[]): void;
+  getActions(node: Node, canvas: InfiniteCanvas): IMenuAction[];
 }
 
 /**
@@ -48,6 +52,10 @@ export const ContextMenu = (): IContextMenu => {
     setActions(newActions);
   };
 
+  const getActions = (node: Node, canvas: InfiniteCanvas): IMenuAction[] => {
+    return node.getActions(canvas);
+  };
+
   const render = () => (
     <div
       className={`absolute p-1 min-w-[100px] bg-gray-600 rounded-md border border-gray-200 shadow-lg ${
@@ -63,6 +71,7 @@ export const ContextMenu = (): IContextMenu => {
     show,
     hide,
     updateActions,
+    getActions,
     ...render(),
   };
 };

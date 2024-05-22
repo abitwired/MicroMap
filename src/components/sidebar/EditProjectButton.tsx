@@ -5,7 +5,9 @@ export const EditProjectButton = ({
 }: {
   setIsEditing: (isEditing: boolean) => void;
 }) => {
-  const onClick = () => {
+  const onClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
     setIsEditing(true);
   };
 

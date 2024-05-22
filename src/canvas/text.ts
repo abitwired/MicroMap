@@ -32,8 +32,6 @@ export class Text extends Node implements TextElement {
     text,
     color,
     fontColor,
-    contextMenuActions = [],
-    canvas,
   }: {
     id: string;
     x: number;
@@ -43,19 +41,8 @@ export class Text extends Node implements TextElement {
     text: string;
     color: string;
     fontColor: string;
-    contextMenuActions?: IMenuAction[];
-    canvas: InfiniteCanvas;
   }) {
-    const deleteAction: IMenuAction = MenuAction({
-      name: "Delete",
-      onClick: () => {
-        canvas.hideContextMenu();
-        canvas.deleteElement(id);
-      },
-    });
-    contextMenuActions.push(deleteAction);
-
-    super({ id, x, y, width, height, color, contextMenuActions });
+    super({ id, x, y, width, height, color });
     this.text = text;
     this.fontColor = fontColor;
   }
@@ -105,6 +92,62 @@ export class Text extends Node implements TextElement {
         this.width / 2,
         this.height / 2 + (lines.length > 1 ? index * 18 : 18) - totalOffsetY
       );
+    });
+  }
+
+  public getActions(canvas: InfiniteCanvas): IMenuAction[] {
+    const deleteAction: IMenuAction = MenuAction({
+      name: "Delete",
+      onClick: () => {
+        canvas.hideContextMenu();
+        canvas.deleteElement(this.id);
+      },
+    });
+    return [deleteAction];
+  }
+
+  /**
+   * Serializes the element to a JSON object.
+   * @returns The JSON representation of the element.
+   */
+  toJSON(): Record<string, unknown> {
+    return {
+      id: this.id,
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+    };
+  }
+
+  /**
+   * Creates a new instance of the element from a JSON object.
+   * @param json - The JSON object to create the element from.
+   * @returns A new instance of the element.
+   */
+  static fromJSON(json: Record<string, unknown>): Text {
+    if (
+      json.id === undefined ||
+      json.x === undefined ||
+      json.y === undefined ||
+      json.width === undefined ||
+      json.height === undefined ||
+      json.text === undefined ||
+      json.color === undefined ||
+      json.fontColor === undefined
+    ) {
+      throw new Error("Incomplete JSON object");
+    }
+
+    return new Text({
+      id: json.id as string,
+      x: json.x as number,
+      y: json.y as number,
+      width: json.width as number,
+      height: json.height as number,
+      text: json.text as string,
+      color: json.color as string,
+      fontColor: json.fontColor as string,
     });
   }
 }

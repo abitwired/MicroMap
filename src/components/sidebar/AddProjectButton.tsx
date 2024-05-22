@@ -1,11 +1,13 @@
 import { useContext } from "react";
 import { AppContext } from "../../store/app-provider";
-import { Types } from "../../store/reducers/projects/actions";
+import { Types } from "../../store/types";
 
 export const AddProjectButton = () => {
   const { state, dispatch } = useContext(AppContext);
 
-  const onClick = () => {
+  const onClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
     dispatch({
       type: Types.Create,
       payload: {

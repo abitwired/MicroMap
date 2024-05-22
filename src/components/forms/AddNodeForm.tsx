@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ServiceDefinition } from "../../canvas/node/types";
 import { Text } from "../../canvas/text";
 import { InfiniteCanvas } from "../../canvas/infinite-canvas";
@@ -22,6 +22,18 @@ export const AddNodeForm = ({
     existingServiceDefinition?.type || ""
   );
 
+  useEffect(() => {
+    // Hide form when clicking outside of it
+    const handleClick = (e: MouseEvent) => {
+      const form = document.getElementById("add-node-form");
+      if (form && !form.contains(e.target as Node)) {
+        setVisibility(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClick);
+  }, []);
+
   const setVisibility = (isVisible: boolean) => {
     setIsVisible(isVisible);
   };
@@ -44,7 +56,6 @@ export const AddNodeForm = ({
       text: name,
       color: "#444",
       fontColor: "white",
-      canvas,
     });
 
     canvas.addElement(node);
@@ -54,15 +65,11 @@ export const AddNodeForm = ({
 
   const render = () => (
     <div
-      className={`absolute w-full h-full bg-slate-800/75 rounded-md ${
+      className={`absolute min-w-[500px] rounded-md ${
         isVisible ? "" : "hidden"
       }`}
     >
-      <div
-        id="add-node-form"
-        className={`absolute p-5 top-1/2 left-1/2 transform w-[500px] h-[500px] -translate-x-1/2 -translate-y-1/2
-    `}
-      >
+      <div id="add-node-form" className={`absolute p-5`}>
         <form
           className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
           onSubmit={(e) => {

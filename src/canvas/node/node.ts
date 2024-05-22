@@ -15,7 +15,6 @@ export class Node
   dragOffsetX: number;
   dragOffsetY: number;
   isHovered: boolean = false;
-  contextMenuActions: IMenuAction[] = [];
 
   /**
    * Creates a new instance of the Node class.
@@ -25,7 +24,6 @@ export class Node
    * @param width - The width of the node.
    * @param height - The height of the node.
    * @param color - The color of the node.
-   * @param contextMenuActions - The context menu actions associated with the node.
    */
   constructor({
     id,
@@ -34,7 +32,6 @@ export class Node
     width,
     height,
     color,
-    contextMenuActions,
   }: {
     id: string;
     x: number;
@@ -42,14 +39,12 @@ export class Node
     width: number;
     height: number;
     color: string;
-    contextMenuActions?: IMenuAction[];
   }) {
     super(id, x, y, width, height);
     this.radius = 10;
     this.color = color;
     this.dragOffsetX = 0;
     this.dragOffsetY = 0;
-    this.contextMenuActions = contextMenuActions || [];
   }
 
   /**
@@ -139,14 +134,6 @@ export class Node
   onDragEnd() {
     this.dragOffsetX = 0;
     this.dragOffsetY = 0;
-  }
-
-  /**
-   * Gets the context menu actions associated with the node.
-   * @returns An array of context menu actions.
-   */
-  getContextMenuActions(): IMenuAction[] {
-    return this.contextMenuActions;
   }
 
   setHeight(height: number) {

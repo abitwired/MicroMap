@@ -1,10 +1,4 @@
-import { ActionMap, Project } from "../../types";
-
-export enum Types {
-  Create = "CREATE_PROJECT",
-  Delete = "DELETE_PROJECT",
-  Update = "UPDATE_PROJECT",
-}
+import { ActionMap, Project, Types } from "../../types";
 
 export type ProjectPayload = {
   [Types.Create]: Project;

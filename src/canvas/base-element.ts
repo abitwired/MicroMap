@@ -1,10 +1,11 @@
 import { IMenuAction } from "./context-menu/menu-action";
-import { CanvasElement } from "./types";
+import InfiniteCanvas from "./infinite-canvas";
+import { CanvasElement, Serializer } from "./types";
 
 /**
  * Represents a base element in the canvas.
  */
-export class BaseElement implements CanvasElement {
+export class BaseElement implements CanvasElement, Serializer {
   id: string;
   x: number;
   y: number;
@@ -27,21 +28,17 @@ export class BaseElement implements CanvasElement {
     this.height = height;
   }
 
+  getActions(canvas: InfiniteCanvas): IMenuAction[] {
+    console.warn("getActions method not implemented");
+    return [];
+  }
+
   /**
    * Gets the unique identifier of the element.
    * @returns The unique identifier of the element.
    */
   getId(): string {
     return this.id;
-  }
-
-  /**
-   * Gets the context menu actions for the element.
-   * @returns An array of context menu actions.
-   */
-  getContextMenuActions(): IMenuAction[] {
-    console.warn("getContextMenu method not implemented");
-    return [];
   }
 
   /**
@@ -65,6 +62,39 @@ export class BaseElement implements CanvasElement {
       worldY >= this.y &&
       worldY <= this.y + this.height;
     return pointInsideElement;
+  }
+
+  /**
+   * Serializes the element to a JSON object.
+   * @returns The JSON representation of the element.
+   */
+  toJSON(): Record<string, unknown> {
+    return {
+      id: this.id,
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+    };
+  }
+
+  /**
+   * Creates a new instance of the element from a JSON object.
+   * @param json - The JSON object to create the element from.
+   * @returns A new instance of the element.
+   */
+  fromJSON(json: Record<string, unknown>): BaseElement {
+    if (!json.id || !json.x || !json.y || !json.width || !json.height) {
+      throw new Error("Invalid JSON object");
+    }
+
+    return new BaseElement(
+      json.id as string,
+      json.x as number,
+      json.y as number,
+      json.width as number,
+      json.height as number
+    );
   }
 }
 

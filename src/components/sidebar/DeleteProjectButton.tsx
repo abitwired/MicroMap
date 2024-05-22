@@ -1,12 +1,13 @@
 import { useContext } from "react";
-import { Project } from "../../store/types";
+import { Project, Types } from "../../store/types";
 import { AppContext } from "../../store/app-provider";
-import { Types } from "../../store/reducers/projects/actions";
 import { Trash } from "react-feather";
 export const DeleteProjectButton = ({ project }: { project: Project }) => {
   const { dispatch } = useContext(AppContext);
 
-  const onClick = () => {
+  const onClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
     dispatch({ type: Types.Delete, payload: { id: project.id } });
   };
 

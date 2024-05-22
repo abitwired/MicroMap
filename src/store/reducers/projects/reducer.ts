@@ -1,5 +1,5 @@
-import { Project } from "../../types";
-import { ProjectActions, Types } from "./actions";
+import { Project, Types } from "../../types";
+import { ProjectActions } from "./actions";
 
 /**
  * Reducer function for the projects state.

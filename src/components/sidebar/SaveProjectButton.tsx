@@ -1,16 +1,34 @@
 import { Save } from "react-feather";
-import { Project } from "../../store/types";
+import { Project, Types } from "../../store/types";
+import { AppContext } from "../../store/app-provider";
+import { useContext } from "react";
+import InfiniteCanvas from "../../canvas/infinite-canvas";
 
 export const SaveProjectButton = ({
-  project,
-  setIsEditing,
+  canvas,
+  size = 16,
 }: {
-  project: Project;
-  setIsEditing: (isEditing: boolean) => void;
+  canvas: InfiniteCanvas;
+  size?: number;
 }) => {
-  const onClick = () => {
+  const { state, dispatch } = useContext(AppContext);
+
+  const onClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const project = {
+      ...state.app?.currentProject,
+      elements: canvas.getElements(),
+    };
+
     api.saveProject(project);
-    setIsEditing(false);
+    canvas.save();
+    dispatch({
+      type: Types.Update,
+      payload: {
+        project,
+      },
+    });
   };
 
   return (
@@ -18,7 +36,7 @@ export const SaveProjectButton = ({
       className="text-blue-500 hover:text-blue-800 text-center rounded-lg p-1 hover:bg-blue-100"
       onClick={onClick}
     >
-      <Save size={16} />
+      <Save size={size} />
     </button>
   );
 };

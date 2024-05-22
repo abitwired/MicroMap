@@ -1,7 +1,6 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Project, Types } from "../../store/types";
 import { DeleteProjectButton } from "./DeleteProjectButton";
-import { SaveProjectButton } from "./SaveProjectButton";
 import { EditProjectButton } from "./EditProjectButton";
 import { AppContext } from "../../store/app-provider";
 
@@ -10,6 +9,7 @@ export const ProjectRow = (project: Project) => {
   const [editableProject, setEditableProject] = useState<Project>(project);
   const [isEditing, setIsEditing] = useState(false);
   const { dispatch } = useContext(AppContext);
+  const [isHovering, setIsHovering] = useState(false);
   const onClick = () => {
     dispatch({
       type: Types.SetCurrentProject,
@@ -44,11 +44,26 @@ export const ProjectRow = (project: Project) => {
     );
   }
 
+  useEffect(() => {
+    if (isEditing) {
+      const input = document.querySelector("input");
+      input?.focus();
+      input.onblur = () => {
+        setIsEditing(false);
+        api.saveProject(editableProject);
+      };
+    }
+
+    return () => {};
+  }, [isEditing]);
+
   return (
     <li
       key={project.id}
       className="flex items-center justify-between p-2 list-none hover:bg-zinc-700 rounded-md transition-colors duration-100 ease-in-out hover:cursor-pointer"
       onClick={onClick}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
     >
       <div className="flex items-center">
         <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
@@ -57,12 +72,12 @@ export const ProjectRow = (project: Project) => {
           <p className="text-xs text-gray-400">{date.toLocaleString()}</p>
         </div>
       </div>
-      <div className="flex items-center">
+      <div
+        className={`flex items-center ${
+          isHovering || isEditing ? "" : "hidden"
+        }`}
+      >
         <EditProjectButton setIsEditing={setIsEditing} />
-        <SaveProjectButton
-          project={editableProject}
-          setIsEditing={setIsEditing}
-        />
         <DeleteProjectButton project={editableProject} />
       </div>
     </li>

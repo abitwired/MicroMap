@@ -1,4 +1,5 @@
 import { IMenuAction } from "./context-menu/menu-action";
+import InfiniteCanvas from "./infinite-canvas";
 
 /**
  * Represents a canvas element.
@@ -25,10 +26,18 @@ export interface CanvasElement {
   containsPoint(x: number, y: number): boolean;
 
   /**
-   * Gets the context menu actions for the canvas element.
-   * @returns An array of context menu actions.
+   * Gets the actions for the canvas element.
+   * @param canvas - The infinite canvas.
+   * @returns The actions for the canvas element.
    */
-  getContextMenuActions(): IMenuAction[];
+  getActions(canvas: InfiniteCanvas): IMenuAction[];
+
+  /**
+   * Creates a new instance of the canvas element from the provided JSON object.
+   * @param json - The JSON object to create the canvas element from.
+   * @returns A new instance of the canvas element.
+   */
+  fromJSON(json: any): CanvasElement;
 }
 
 /**
@@ -73,4 +82,19 @@ export interface HoverableElement {
    * Called when the hover state of the element is ended.
    */
   hoverOff(): void;
+}
+
+export interface Serializer {
+  /**
+   * Creates a new instance of the element from the provided JSON object.
+   * @param json - The JSON object to create the element from.
+   * @returns A new instance of the element.
+   */
+  fromJSON(json: any): InstanceType<any>;
+
+  /**
+   * Converts the element to a JSON object.
+   * @returns The JSON object representing the element.
+   */
+  toJSON(): any;
 }

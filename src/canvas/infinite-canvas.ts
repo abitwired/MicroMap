@@ -4,6 +4,8 @@ import { ILoadingIcon } from "./loading-icon";
 import { IAddNodeForm } from "../components/forms/AddNodeForm";
 import Node from "./node/node";
 import { CanvasElement, DraggableElement, HoverableElement } from "./types";
+import { Project } from "../store/types";
+import { Text } from "./text";
 
 /**
  * Represents an infinite canvas that allows panning, zooming, and drawing elements.
@@ -30,6 +32,7 @@ export class InfiniteCanvas {
   worldY: number;
 
   constructor(
+    project: Project,
     canvas: HTMLCanvasElement,
     contextMenu: IContextMenu,
     loadingIcon: ILoadingIcon,
@@ -37,7 +40,8 @@ export class InfiniteCanvas {
   ) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
-    this.elements = [];
+    this.elements =
+      project?.elements.map((element: any) => Text.fromJSON(element)) || [];
     this.scale = 1;
     this.minScale = 0.5;
     this.maxScale = 5;
@@ -54,8 +58,12 @@ export class InfiniteCanvas {
     this.initialize();
   }
 
+  public getElements(): CanvasElement[] {
+    return this.elements;
+  }
+
   initialize() {
-    window.addEventListener("resize", () => this.resizeCanvas());
+    window.addEventListener("resize", () => this.resizeCanvas(), false);
     this.canvas.addEventListener("mousedown", (e) => this.onMouseDown(e));
     this.canvas.addEventListener("mousemove", (e) => this.onMouseMove(e));
     this.canvas.addEventListener("mouseup", () => this.onMouseUp());
@@ -108,7 +116,7 @@ export class InfiniteCanvas {
    * @param screenY - The y-coordinate in the screen space.
    */
   setContextMenu(node: Node, screenX: number, screenY: number) {
-    const actions = node.getContextMenuActions();
+    const actions = this.contextMenu.getActions(node, this);
     if (actions.length > 0) {
       this.contextMenu.updateActions(actions);
       this.contextMenu.show(screenX, screenY);
@@ -125,7 +133,6 @@ export class InfiniteCanvas {
       (element) => element.getId() !== elementId
     );
     this.draw();
-    this.save();
   }
 
   /**
@@ -184,7 +191,7 @@ export class InfiniteCanvas {
    * @returns An object containing the x and y coordinates of the mouse.
    */
   getMousePos(evt: MouseEvent) {
-    var rect = this.canvas.getBoundingClientRect();
+    const rect = this.canvas.getBoundingClientRect();
     return {
       x:
         ((evt.clientX - rect.left) / (rect.right - rect.left)) *
@@ -247,12 +254,12 @@ export class InfiniteCanvas {
     }
     if (this.draggingElement) {
       this.draggingElement.onDragEnd();
-      this.save();
       this.draggingElement = null;
     }
   }
 
-  /**
+  /**    console.log(actions);
+
    * Zooms the canvas based on the provided wheel event.
    * @param event - The wheel event.
    */
@@ -286,7 +293,6 @@ export class InfiniteCanvas {
   addElement(element: CanvasElement) {
     this.elements.push(element);
     this.draw();
-    this.save();
   }
 
   getWorldCoordinates() {
@@ -348,22 +354,12 @@ export class InfiniteCanvas {
   /**
    * Saves the current state of the canvas.
    */
-  save() {
-    if (this.saveInterval) {
-      clearInterval(this.saveInterval);
-    }
+  public save() {
+    this.loadingIcon.setVisibility(true);
 
-    if (this.savePendingInterval) {
-      clearInterval(this.savePendingInterval);
-    }
-
-    this.savePendingInterval = setTimeout(() => {
-      this.loadingIcon.setVisibility(true);
-
-      this.saveInterval = setTimeout(() => {
-        this.loadingIcon.setVisibility(false);
-      }, 5_000);
-    }, 5_000);
+    this.saveInterval = setTimeout(() => {
+      this.loadingIcon.setVisibility(false);
+    }, 2_000);
   }
 }
 

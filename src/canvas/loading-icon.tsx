@@ -18,7 +18,7 @@ export const LoadingIcon = (): ILoadingIcon => {
 
   const render = () => (
     <div
-      className={`absolute top-7 right-7 flex items-center ${
+      className={`absolute top-7 right-14 flex items-center ${
         isVisible ? "" : "hidden"
       }`}
     >

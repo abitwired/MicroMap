@@ -1,8 +1,13 @@
+import { CanvasElement } from "../canvas/types";
+import { BaseElement } from "../canvas/base-element";
+import { Text } from "../canvas/text";
+
 export type Project = {
   id: string;
   name: string;
   createdAt: string;
   updatedAt: string;
+  elements: Array<Text | BaseElement | CanvasElement>;
 };
 
 export type App = {
@@ -16,6 +21,7 @@ export type Store = {
 
 export enum Types {
   Create = "CREATE_PROJECT",
+  Update = "UPDATE_PROJECT",
   Delete = "DELETE_PROJECT",
   SetCurrentProject = "SET_CURRENT_PROJECT",
 }
