@@ -1,13 +1,11 @@
-import { CanvasElement } from "../canvas/types";
-import { BaseElement } from "../canvas/base-element";
-import { Text } from "../canvas/text";
+import { Graph } from "./graph";
 
 export type Project = {
   id: string;
   name: string;
   createdAt: string;
   updatedAt: string;
-  elements: Array<Text | BaseElement | CanvasElement>;
+  graph: Graph;
 };
 
 export type App = {

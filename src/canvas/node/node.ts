@@ -18,7 +18,6 @@ export class Node
   isHovered: boolean = false;
   intoNodeConnection: NodeConnector = null;
   outNodeConnection: NodeConnector = null;
-  inConnections: Node[] = [];
   outConnections: Node[] = [];
 
   /**
@@ -114,6 +113,24 @@ export class Node
       this.intoNodeConnection.draw(ctx);
       this.outNodeConnection.draw(ctx);
     }
+
+    // Draw the node's connections
+    this.outConnections.forEach((node) => {
+      const curve = new ConnectionCurve({
+        startX: this.outNodeConnection.x,
+        startY: this.outNodeConnection.y,
+        controlPoint1X: this.outNodeConnection.x + 50,
+        controlPoint1Y: this.outNodeConnection.y,
+        controlPoint2X: node.intoNodeConnection.x - 50,
+        controlPoint2Y: node.intoNodeConnection.y,
+        endX: node.intoNodeConnection.x,
+        endY: node.intoNodeConnection.y,
+        color: "white",
+        width: 3,
+        dash: [],
+      });
+      curve.draw(ctx);
+    });
   }
 
   /**

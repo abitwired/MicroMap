@@ -47,19 +47,31 @@ export class ConnectionCurve {
    */
   dash: number[] = [];
 
-  constructor(
-    startX: number = 0,
-    startY: number = 0,
-    controlPoint1X: number = 0,
-    controlPoint1Y: number = 0,
-    controlPoint2X: number = 0,
-    controlPoint2Y: number = 0,
-    endX: number = 0,
-    endY: number = 0,
-    color: string = "#fff",
-    width: number = 3,
-    dash: number[] = []
-  ) {
+  constructor({
+    startX = 0,
+    startY = 0,
+    controlPoint1X = 0,
+    controlPoint1Y = 0,
+    controlPoint2X = 0,
+    controlPoint2Y = 0,
+    endX = 0,
+    endY = 0,
+    color = "#fff",
+    width = 3,
+    dash = [],
+  }: {
+    startX: number;
+    startY: number;
+    controlPoint1X: number;
+    controlPoint1Y: number;
+    controlPoint2X: number;
+    controlPoint2Y: number;
+    endX: number;
+    endY: number;
+    color: string;
+    width: number;
+    dash: number[];
+  }) {
     this.startX = startX;
     this.startY = startY;
     this.controlPoint1X = controlPoint1X;

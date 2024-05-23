@@ -1,8 +1,9 @@
 import { Save } from "react-feather";
-import { Project, Types } from "../../store/types";
+import { Types } from "../../store/types";
 import { AppContext } from "../../store/app-provider";
 import { useContext } from "react";
 import InfiniteCanvas from "../../canvas/infinite-canvas";
+import { Graph } from "../../store/graph";
 
 export const SaveProjectButton = ({
   canvas,
@@ -18,7 +19,7 @@ export const SaveProjectButton = ({
     event.stopPropagation();
     const project = {
       ...state.app?.currentProject,
-      elements: canvas.getElements(),
+      graph: Graph.convertCanvasElementsToGraph(canvas.elements),
     };
 
     api.saveProject(project);

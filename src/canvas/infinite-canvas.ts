@@ -5,9 +5,9 @@ import { IAddNodeForm } from "../components/forms/AddNodeForm";
 import Node from "./node/node";
 import { CanvasElement, DraggableElement, HoverableElement } from "./types";
 import { Project } from "../store/types";
-import { Text } from "./text";
 import { NodeConnector } from "./node/node-connector";
 import ConnectionCurve from "./node/connection-curve";
+import { Graph } from "../store/graph";
 
 /**
  * Represents an infinite canvas that allows panning, zooming, and drawing elements.
@@ -25,14 +25,27 @@ export class InfiniteCanvas {
   startX: number;
   startY: number;
   draggingElement: DraggableElement | null;
-  connector: NodeConnector | null;
   creatingConnection: boolean = false;
   contextMenu: IContextMenu;
   saveInterval: NodeJS.Timeout | null;
   savePendingInterval: NodeJS.Timeout | null;
   loadingIcon: ILoadingIcon;
   addNodeForm: IAddNodeForm;
-  connectionCurve: ConnectionCurve = new ConnectionCurve();
+  connectingNode: Node | null;
+  connectingNodeConnector: NodeConnector | null;
+  connectionCurve: ConnectionCurve = new ConnectionCurve({
+    startX: 0,
+    startY: 0,
+    controlPoint1X: 0,
+    controlPoint1Y: 0,
+    controlPoint2X: 0,
+    controlPoint2Y: 0,
+    endX: 0,
+    endY: 0,
+    color: "#f5f5f5",
+    width: 3,
+    dash: [],
+  });
   worldX: number;
   worldY: number;
 
@@ -43,10 +56,11 @@ export class InfiniteCanvas {
     loadingIcon: ILoadingIcon,
     addNodeForm: IAddNodeForm
   ) {
+    const graph = new Graph(project.graph.vertices);
+    console.log(graph);
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
-    this.elements =
-      project?.elements.map((element: any) => Text.fromJSON(element)) || [];
+    this.elements = graph.convertGraphToCanvasElements() ?? [];
     this.scale = 1;
     this.minScale = 0.5;
     this.maxScale = 5;
@@ -142,14 +156,52 @@ export class InfiniteCanvas {
 
   startConnection(node: Node, worldX: number, worldY: number) {
     if (node.intoNodeConnection.containsPoint(worldX, worldY)) {
-      this.connector = node.intoNodeConnection;
+      this.connectingNode = node;
+      this.connectingNodeConnector = node.intoNodeConnection;
       this.connectionCurve.startX = node.intoNodeConnection.x;
       this.connectionCurve.startY = node.intoNodeConnection.y;
     } else if (node.outNodeConnection.containsPoint(worldX, worldY)) {
-      this.connector = node.outNodeConnection;
+      this.connectingNode = node;
+      this.connectingNodeConnector = node.outNodeConnection;
       this.connectionCurve.startX = node.outNodeConnection.x;
       this.connectionCurve.startY = node.outNodeConnection.y;
     }
+  }
+
+  closeConnection(node: Node, worldX: number, worldY: number) {
+    if (node !== this.connectingNode) {
+      // The case where the connection starts from the intoNodeConnection
+      // and ends at the outNodeConnection is called a "reverse connection"
+      const isReverse =
+        this.connectingNode.intoNodeConnection === this.connectingNodeConnector;
+      if (isReverse) {
+        if (!node.outConnections.includes(this.connectingNode)) {
+          node.outConnections.push(this.connectingNode);
+        }
+      } else {
+        if (!this.connectingNode.outConnections.includes(node)) {
+          this.connectingNode.outConnections.push(node);
+        }
+      }
+    } else {
+      console.log("Cannot connect a node to itself.");
+    }
+
+    this.clearConnectionCurve();
+  }
+
+  clearConnectionCurve() {
+    this.creatingConnection = false;
+    this.connectingNode = null;
+    this.connectingNodeConnector = null;
+    this.connectionCurve.startX = 0;
+    this.connectionCurve.startY = 0;
+    this.connectionCurve.endX = 0;
+    this.connectionCurve.endY = 0;
+    this.connectionCurve.controlPoint1X = 0;
+    this.connectionCurve.controlPoint1Y = 0;
+    this.connectionCurve.controlPoint2X = 0;
+    this.connectionCurve.controlPoint2Y = 0;
   }
 
   /**
@@ -175,23 +227,24 @@ export class InfiniteCanvas {
           // We've clicked on an NodeConnector
           if (element instanceof Node) {
             const node = element as Node;
-            if (this.creatingConnection) {
+            const clickedOnConnector =
+              node.intoNodeConnection.containsPoint(worldX, worldY) ||
+              node.outNodeConnection.containsPoint(worldX, worldY);
+            if (clickedOnConnector && !this.creatingConnection) {
+              this.creatingConnection = true;
+              this.startConnection(node, worldX, worldY);
+              return;
+            } else if (clickedOnConnector && this.creatingConnection) {
               this.creatingConnection = false;
-              this.connector = null;
-            } else {
-              if (
-                node.intoNodeConnection.containsPoint(worldX, worldY) ||
-                node.outNodeConnection.containsPoint(worldX, worldY)
-              ) {
-                this.creatingConnection = true;
-                this.startConnection(node, worldX, worldY);
-                return;
-              }
+              this.closeConnection(node, worldX, worldY);
             }
           }
         }
       }
+      this.clearConnectionCurve();
     } else if (event.button === 2) {
+      this.clearConnectionCurve();
+
       // Show context menu on right click
       for (const element of this.elements) {
         if (element.containsPoint(worldX, worldY)) {
@@ -280,9 +333,9 @@ export class InfiniteCanvas {
       }
     }
 
-    if (this.connector) {
-      this.connectionCurve.startX = this.connector.x;
-      this.connectionCurve.startY = this.connector.y;
+    if (this.connectingNode) {
+      this.connectionCurve.startX = this.connectingNodeConnector.x;
+      this.connectionCurve.startY = this.connectingNodeConnector.y;
       this.connectionCurve.endX = worldX;
       this.connectionCurve.endY = worldY;
     }
