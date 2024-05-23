@@ -16,8 +16,8 @@ export class Node
   dragOffsetX: number;
   dragOffsetY: number;
   isHovered: boolean = false;
-  intoNodeConnection: NodeConnector = null;
-  outNodeConnection: NodeConnector = null;
+  intoNodeConnector: NodeConnector = null;
+  outNodeConnector: NodeConnector = null;
   outConnections: Node[] = [];
 
   /**
@@ -49,13 +49,13 @@ export class Node
     this.color = color;
     this.dragOffsetX = 0;
     this.dragOffsetY = 0;
-    this.intoNodeConnection = new NodeConnector(
+    this.intoNodeConnector = new NodeConnector(
       this.x,
       this.y + this.height / 2,
       this.radius,
       this.color
     );
-    this.outNodeConnection = new NodeConnector(
+    this.outNodeConnector = new NodeConnector(
       this.x + this.width,
       this.y + this.height / 2,
       this.radius,
@@ -110,21 +110,21 @@ export class Node
     ctx.stroke();
 
     if (this.isHovered) {
-      this.intoNodeConnection.draw(ctx);
-      this.outNodeConnection.draw(ctx);
+      this.intoNodeConnector.draw(ctx);
+      this.outNodeConnector.draw(ctx);
     }
 
     // Draw the node's connections
     this.outConnections.forEach((node) => {
       const curve = new ConnectionCurve({
-        startX: this.outNodeConnection.x,
-        startY: this.outNodeConnection.y,
-        controlPoint1X: this.outNodeConnection.x + 50,
-        controlPoint1Y: this.outNodeConnection.y,
-        controlPoint2X: node.intoNodeConnection.x - 50,
-        controlPoint2Y: node.intoNodeConnection.y,
-        endX: node.intoNodeConnection.x,
-        endY: node.intoNodeConnection.y,
+        startX: this.outNodeConnector.x,
+        startY: this.outNodeConnector.y,
+        controlPoint1X: this.outNodeConnector.x + 50,
+        controlPoint1Y: this.outNodeConnector.y,
+        controlPoint2X: node.intoNodeConnector.x - 50,
+        controlPoint2Y: node.intoNodeConnector.y,
+        endX: node.intoNodeConnector.x,
+        endY: node.intoNodeConnector.y,
         color: "white",
         width: 3,
         dash: [],
@@ -165,10 +165,10 @@ export class Node
   onDragMove(x: number, y: number) {
     this.x = x - this.dragOffsetX;
     this.y = y - this.dragOffsetY;
-    this.intoNodeConnection.x = this.x;
-    this.intoNodeConnection.y = this.y + this.height / 2;
-    this.outNodeConnection.x = this.x + this.width;
-    this.outNodeConnection.y = this.y + this.height / 2;
+    this.intoNodeConnector.x = this.x;
+    this.intoNodeConnector.y = this.y + this.height / 2;
+    this.outNodeConnector.x = this.x + this.width;
+    this.outNodeConnector.y = this.y + this.height / 2;
   }
 
   /**

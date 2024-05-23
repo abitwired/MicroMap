@@ -46,6 +46,14 @@ export class ConnectionCurve {
    * The dash pattern of the curve.
    */
   dash: number[] = [];
+  /**
+   * Whether the curve is selected.
+   */
+  selected: boolean = false;
+  /**
+   * The bezier curve of the connection.
+   */
+  bezierCurve: CanvasPath = null;
 
   constructor({
     startX = 0,
@@ -85,6 +93,10 @@ export class ConnectionCurve {
     this.dash = dash;
   }
 
+  setSelected(selected: boolean) {
+    this.selected = selected;
+  }
+
   /**
    * Draws the curve on the canvas.
    * @param ctx - The canvas rendering context.
@@ -93,7 +105,13 @@ export class ConnectionCurve {
     // Create s-shape curve between the two points
     ctx.beginPath();
     ctx.strokeStyle = this.color;
-    ctx.lineWidth = this.width;
+
+    if (this.selected) {
+      ctx.lineWidth = this.width + 1;
+    } else {
+      ctx.lineWidth = this.width;
+    }
+
     ctx.setLineDash(this.dash);
     ctx.moveTo(this.startX, this.startY);
 

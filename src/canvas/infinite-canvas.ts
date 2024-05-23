@@ -8,6 +8,7 @@ import { Project } from "../store/types";
 import { NodeConnector } from "./node/node-connector";
 import ConnectionCurve from "./node/connection-curve";
 import { Graph } from "../store/graph";
+import { Text } from "./text";
 
 /**
  * Represents an infinite canvas that allows panning, zooming, and drawing elements.
@@ -155,16 +156,16 @@ export class InfiniteCanvas {
   }
 
   startConnection(node: Node, worldX: number, worldY: number) {
-    if (node.intoNodeConnection.containsPoint(worldX, worldY)) {
+    if (node.intoNodeConnector.containsPoint(worldX, worldY)) {
       this.connectingNode = node;
-      this.connectingNodeConnector = node.intoNodeConnection;
-      this.connectionCurve.startX = node.intoNodeConnection.x;
-      this.connectionCurve.startY = node.intoNodeConnection.y;
-    } else if (node.outNodeConnection.containsPoint(worldX, worldY)) {
+      this.connectingNodeConnector = node.intoNodeConnector;
+      this.connectionCurve.startX = node.intoNodeConnector.x;
+      this.connectionCurve.startY = node.intoNodeConnector.y;
+    } else if (node.outNodeConnector.containsPoint(worldX, worldY)) {
       this.connectingNode = node;
-      this.connectingNodeConnector = node.outNodeConnection;
-      this.connectionCurve.startX = node.outNodeConnection.x;
-      this.connectionCurve.startY = node.outNodeConnection.y;
+      this.connectingNodeConnector = node.outNodeConnector;
+      this.connectionCurve.startX = node.outNodeConnector.x;
+      this.connectionCurve.startY = node.outNodeConnector.y;
     }
   }
 
@@ -173,7 +174,7 @@ export class InfiniteCanvas {
       // The case where the connection starts from the intoNodeConnection
       // and ends at the outNodeConnection is called a "reverse connection"
       const isReverse =
-        this.connectingNode.intoNodeConnection === this.connectingNodeConnector;
+        this.connectingNode.intoNodeConnector === this.connectingNodeConnector;
       if (isReverse) {
         if (!node.outConnections.includes(this.connectingNode)) {
           node.outConnections.push(this.connectingNode);
@@ -228,8 +229,8 @@ export class InfiniteCanvas {
           if (element instanceof Node) {
             const node = element as Node;
             const clickedOnConnector =
-              node.intoNodeConnection.containsPoint(worldX, worldY) ||
-              node.outNodeConnection.containsPoint(worldX, worldY);
+              node.intoNodeConnector.containsPoint(worldX, worldY) ||
+              node.outNodeConnector.containsPoint(worldX, worldY);
             if (clickedOnConnector && !this.creatingConnection) {
               this.creatingConnection = true;
               this.startConnection(node, worldX, worldY);
@@ -241,6 +242,7 @@ export class InfiniteCanvas {
           }
         }
       }
+
       this.clearConnectionCurve();
     } else if (event.button === 2) {
       this.clearConnectionCurve();
