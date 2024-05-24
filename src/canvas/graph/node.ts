@@ -1,14 +1,14 @@
-import MenuAction, { IMenuAction } from "./context-menu/menu-action";
-import InfiniteCanvas from "./infinite-canvas";
-import Node from "./node/node";
-import { TextElement } from "./types";
+import MenuAction, { IMenuAction } from "../context-menu/menu-action";
+import { InfiniteCanvas } from "../infinite-canvas";
+import { TextElement } from "../types";
+import { Vertex } from "./vertex";
 
 /**
  * Represents a text element in the canvas.
  */
-export class Text extends Node implements TextElement {
+export class Node extends Vertex implements TextElement {
   id: string;
-  text: string;
+  label: string;
   fontColor: string;
 
   /**
@@ -29,7 +29,7 @@ export class Text extends Node implements TextElement {
     y,
     width,
     height,
-    text,
+    label,
     color,
     fontColor,
   }: {
@@ -38,12 +38,12 @@ export class Text extends Node implements TextElement {
     y: number;
     width: number;
     height: number;
-    text: string;
+    label: string;
     color: string;
     fontColor: string;
   }) {
     super({ id, x, y, width, height, color });
-    this.text = text;
+    this.label = label;
     this.fontColor = fontColor;
   }
 
@@ -76,7 +76,7 @@ export class Text extends Node implements TextElement {
    * @param ctx - The canvas rendering context.
    */
   draw(ctx: CanvasRenderingContext2D): void {
-    const lines = this.getLines(ctx, this.text, this.width / 2);
+    const lines = this.getLines(ctx, this.label, this.width / 2);
     super.setHeight(36 + lines.length * 16);
     super.draw(ctx);
 
@@ -125,7 +125,7 @@ export class Text extends Node implements TextElement {
    * @param json - The JSON object to create the element from.
    * @returns A new instance of the element.
    */
-  static fromJSON(json: Record<string, unknown>): Text {
+  static fromJSON(json: Record<string, unknown>): Node {
     if (
       json.id === undefined ||
       json.x === undefined ||
@@ -139,13 +139,13 @@ export class Text extends Node implements TextElement {
       throw new Error("Incomplete JSON object");
     }
 
-    return new Text({
+    return new Node({
       id: json.id as string,
       x: json.x as number,
       y: json.y as number,
       width: json.width as number,
       height: json.height as number,
-      text: json.text as string,
+      label: json.text as string,
       color: json.color as string,
       fontColor: json.fontColor as string,
     });

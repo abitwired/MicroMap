@@ -19,7 +19,7 @@ export const SaveProjectButton = ({
     event.stopPropagation();
     const project = {
       ...state.app?.currentProject,
-      graph: Graph.convertCanvasElementsToGraph(canvas.elements),
+      graph: Graph.fromVisualGraph(canvas.graph),
     };
 
     api.saveProject(project);

@@ -1,10 +1,13 @@
 import { CanvasElement } from "../canvas/types";
-import { Text } from "../canvas/text";
+import { Node as VisualNode } from "../canvas/graph/node";
+import { Edge as VisualEdge } from "../canvas/graph/edge";
+import { Curve } from "../canvas/graph/curve";
+import { VisualGraph } from "../canvas/graph/visual-graph";
 
 /**
  * Represents a vertex in a graph.
  */
-export type Vertex = {
+export type Node = {
   /** The unique identifier of the vertex. */
   id: string;
   /** The x-coordinate of the vertex. */
@@ -19,61 +22,93 @@ export type Vertex = {
   width: number;
   /** The height of the vertex. */
   height: number;
-  /** The connections of the vertex. */
-  connections: string[];
+};
+
+/**
+ * Represents a connection between two vertices in a graph.
+ */
+export type Edge = {
+  /** The from vertex of the connection. */
+  from: string;
+  /** The to vertex of the connection. */
+  to: string;
 };
 
 /**
  * Represents a graph.
  */
 export class Graph {
-  vertices: Vertex[] = [];
+  nodes: Node[] = [];
+  edges: Edge[] = [];
 
   /**
    * Creates a new instance of the graph.
-   * @param vertices - The vertices of the graph.
+   * @param nodes - The vertices of the graph.
    */
-  constructor(vertices: Vertex[] = []) {
-    this.vertices = vertices;
+  constructor(nodes: Node[] = [], edges: Edge[] = []) {
+    this.nodes = nodes;
+    this.edges = edges;
   }
 
   /**
    * Adds a vertex to the graph.
-   * @param vertex - The vertex to add.
+   * @param node - The vertex to add.
    */
-  addVertex(vertex: Vertex) {
-    this.vertices.push(vertex);
+  addNode(node: Node) {
+    this.nodes.push(node);
   }
 
   /**
    * Removes a vertex from the graph.
-   * @param vertex - The vertex to remove.
+   * @param node - The vertex to remove.
    */
-  removeVertex(vertex: Vertex) {
-    const index = this.vertices.indexOf(vertex);
+  removeNode(node: Node) {
+    const index = this.nodes.indexOf(node);
     if (index !== -1) {
-      this.vertices.splice(index, 1);
+      this.nodes.splice(index, 1);
+    }
+
+    this.edges = this.edges.filter(
+      (edge) => edge.from !== node.id && edge.to !== node.id
+    );
+  }
+
+  /**
+   * Removes a vertex from the graph.
+   * @param nodeId - The vertex to remove.
+   */
+  removeNodeById(nodeId: string) {
+    const index = this.nodes.findIndex((node) => node.id === nodeId);
+    if (index !== -1) {
+      this.nodes.splice(index, 1);
+    }
+
+    this.edges = this.edges.filter(
+      (edge) => edge.from !== nodeId && edge.to !== nodeId
+    );
+  }
+
+  /**
+   * Adds a connection to the graph.
+   * @param edge - The connection to add.
+   */
+  addEdge(edge: Edge) {
+    this.edges.push(edge);
+  }
+
+  /**
+   * Removes a connection from the graph.
+   * @param edge - The connection to remove.
+   */
+  removeEdge(edge: Edge) {
+    const index = this.edges.indexOf(edge);
+    if (index !== -1) {
+      this.edges.splice(index, 1);
     }
   }
 
-  /**
-   * Adds a connection between two vertices.
-   * @param vertex1 - The first vertex.
-   * @param vertex2 - The second vertex.
-   */
-  addConnection(vertex1: Vertex, vertex2: Vertex) {
-    vertex1.connections.push(vertex2.id);
-    vertex2.connections.push(vertex1.id);
-  }
-
-  /**
-   * Removes a connection between two vertices.
-   * @param vertex1 - The first vertex.
-   * @param vertex2 - The second vertex.
-   */
-  removeConnection(vertex1: Vertex, vertex2: Vertex) {
-    vertex1.connections = vertex1.connections.filter((id) => id !== vertex2.id);
-    vertex2.connections = vertex2.connections.filter((id) => id !== vertex1.id);
+  isConnected(from: string, to: string): boolean {
+    return this.edges.some((edge) => edge.from === from && edge.to === to);
   }
 
   /**
@@ -81,30 +116,68 @@ export class Graph {
    * @returns The JSON representation of the graph.
    */
   toJSON(): string {
-    return JSON.stringify(this.vertices);
+    return JSON.stringify(this.nodes);
+  }
+
+  static fromVisualGraph(graph: VisualGraph) {
+    const nodes = graph.nodes.map((node: VisualNode) => {
+      return {
+        id: node.id,
+        x: node.x,
+        y: node.y,
+        label: node.label,
+        color: node.color,
+        width: node.width,
+        height: node.height,
+      };
+    });
+
+    const edges = graph.edges.map((edge: VisualEdge) => {
+      return {
+        from: edge.start.id,
+        to: edge.end.id,
+      };
+    });
+
+    return new Graph(nodes, edges);
   }
 
   convertGraphToCanvasElements(): CanvasElement[] {
-    const canvasElements = this.vertices.map((vertex) => {
-      return new Text({
-        id: vertex.id,
-        x: vertex.x,
-        y: vertex.y,
-        width: vertex.width,
-        height: vertex.height,
-        text: vertex.label,
-        color: vertex.color,
+    const canvasElements: CanvasElement[] = this.nodes.map((node) => {
+      return new VisualNode({
+        id: node.id,
+        x: node.x,
+        y: node.y,
+        width: node.width,
+        height: node.height,
+        label: node.label,
+        color: node.color,
         fontColor: "#fff",
       });
     });
 
-    canvasElements.forEach((element) => {
-      const vertex = this.vertices.find((vertex) => vertex.id === element.id);
-      if (vertex) {
-        element.outConnections = vertex.connections.map((id) => {
-          return canvasElements.find((element) => element.id === id);
-        });
-      }
+    this.edges.forEach((connection) => {
+      const fromVertex = this.nodes.find(
+        (vertex) => vertex.id === connection.from
+      );
+      const toVertex = this.nodes.find((vertex) => vertex.id === connection.to);
+
+      canvasElements.push(
+        new Curve({
+          id: `${connection.from}-${connection.to}`,
+          startX: fromVertex.x,
+          startY: fromVertex.y,
+          controlPoint1X: fromVertex.x + 50,
+          controlPoint1Y: fromVertex.y,
+          controlPoint2X: toVertex.x - 50,
+          controlPoint2Y: toVertex.y,
+          endX: toVertex.x,
+          endY: toVertex.y,
+          color: "#fff",
+          width: 3,
+          dash: [],
+        })
+      );
     });
 
     return canvasElements;
@@ -116,37 +189,37 @@ export class Graph {
    * @returns The graph representation of the JSON string.
    */
   static fromJSON(json: string): Graph {
+    const graphJson = JSON.parse(json);
     const graph = new Graph();
-    graph.vertices = JSON.parse(json);
+    graph.nodes = graphJson.vertices ?? [];
+    graph.edges = graphJson.connections ?? [];
     return graph;
   }
 
-  static convertCanvasElementsToGraph(elements: CanvasElement[]) {
-    const vertices = elements.map((element) => {
-      const el = this.downCastCanvasElement(element);
+  static convertCanvasElementsToGraph(elements: CanvasElement[]): Graph {
+    const vertices: Node[] = elements
+      .filter((el): el is VisualNode => el instanceof VisualNode)
+      .map((element: VisualNode): Node => {
+        return {
+          id: element.id,
+          x: element.x,
+          y: element.y,
+          label: element.label,
+          color: element.color,
+          width: element.width,
+          height: element.height,
+        };
+      });
 
-      return {
-        id: el.id,
-        x: el.x,
-        y: el.y,
-        label: el.text,
-        color: el.color,
-        width: el.width,
-        height: el.height,
-        connections: el.outConnections.map((connection) => {
-          return connection.id;
-        }),
-      };
-    });
+    const connections: Edge[] = elements
+      .filter((el): el is VisualNode => el instanceof VisualNode)
+      .map((element: VisualNode): Edge => {
+        return {
+          from: element.id,
+          to: element.id,
+        };
+      });
 
-    return new Graph(vertices);
-  }
-
-  static downCastCanvasElement(element: CanvasElement): Text {
-    if (element instanceof Text) {
-      return element as Text;
-    } else {
-      throw new Error("Element is not a Text element");
-    }
+    return new Graph(vertices, connections);
   }
 }

@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { ServiceDefinition } from "../../canvas/node/types";
-import { Text } from "../../canvas/text";
+import { Node as VisualNode } from "../../canvas/graph/node";
 import { InfiniteCanvas } from "../../canvas/infinite-canvas";
 
 export interface IAddNodeForm extends JSX.Element {
@@ -9,18 +8,15 @@ export interface IAddNodeForm extends JSX.Element {
 
 export type AddNodeFormProps = {
   canvas: InfiniteCanvas;
-  existingServiceDefinition?: ServiceDefinition;
+  node?: string;
 };
 
 export const AddNodeForm = ({
   canvas,
-  existingServiceDefinition,
+  node,
 }: AddNodeFormProps): IAddNodeForm => {
   const [isVisible, setIsVisible] = useState(false);
-  const [name, setName] = useState(existingServiceDefinition?.name || "");
-  const [serviceType, setServiceType] = useState(
-    existingServiceDefinition?.type || ""
-  );
+  const [name, setName] = useState(node ?? "");
 
   useEffect(() => {
     // Hide form when clicking outside of it
@@ -40,20 +36,19 @@ export const AddNodeForm = ({
 
   const clearForm = () => {
     setName("");
-    setServiceType("");
   };
 
   const onSubmit = () => {
     const worldCoordinates = canvas.getWorldCoordinates();
     const id = `${name}-${new Date()}`;
     // const length = Math.min(250, Math.max(name.length * 10, 100));
-    const node = new Text({
+    const node = new VisualNode({
       id: id,
       x: worldCoordinates.x,
       y: worldCoordinates.y,
       width: 175,
       height: 50,
-      text: name,
+      label: name,
       color: "#444",
       fontColor: "white",
     });

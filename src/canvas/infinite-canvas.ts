@@ -1,22 +1,23 @@
 import { IContextMenu } from "./context-menu/context-menu";
-import MenuAction from "./context-menu/menu-action";
+import { MenuAction } from "./context-menu/menu-action";
 import { ILoadingIcon } from "./loading-icon";
 import { IAddNodeForm } from "../components/forms/AddNodeForm";
-import Node from "./node/node";
+import { Vertex } from "./graph/vertex";
 import { CanvasElement, DraggableElement, HoverableElement } from "./types";
-import { Project } from "../store/types";
-import { NodeConnector } from "./node/node-connector";
-import ConnectionCurve from "./node/connection-curve";
+import { Connector } from "./graph/connector";
+import { Curve } from "./graph/curve";
 import { Graph } from "../store/graph";
-import { Text } from "./text";
+import { VisualGraph } from "./graph/visual-graph";
+import { Edge } from "./graph/edge";
+import { Node } from "./graph/node";
 
 /**
  * Represents an infinite canvas that allows panning, zooming, and drawing elements.
  */
 export class InfiniteCanvas {
   canvas: HTMLCanvasElement;
+  graph: VisualGraph;
   ctx: CanvasRenderingContext2D;
-  elements: CanvasElement[];
   scale: number;
   minScale: number;
   maxScale: number;
@@ -32,9 +33,10 @@ export class InfiniteCanvas {
   savePendingInterval: NodeJS.Timeout | null;
   loadingIcon: ILoadingIcon;
   addNodeForm: IAddNodeForm;
-  connectingNode: Node | null;
-  connectingNodeConnector: NodeConnector | null;
-  connectionCurve: ConnectionCurve = new ConnectionCurve({
+  connectingNode: Vertex | null;
+  connectingNodeConnector: Connector | null;
+  connectionCurve: Curve = new Curve({
+    id: "canvas-ghost-curve",
     startX: 0,
     startY: 0,
     controlPoint1X: 0,
@@ -51,17 +53,15 @@ export class InfiniteCanvas {
   worldY: number;
 
   constructor(
-    project: Project,
+    graph: Graph,
     canvas: HTMLCanvasElement,
     contextMenu: IContextMenu,
     loadingIcon: ILoadingIcon,
     addNodeForm: IAddNodeForm
   ) {
-    const graph = new Graph(project.graph.vertices);
-    console.log(graph);
     this.canvas = canvas;
+    this.graph = VisualGraph.fromGraph(graph);
     this.ctx = canvas.getContext("2d");
-    this.elements = graph.convertGraphToCanvasElements() ?? [];
     this.scale = 1;
     this.minScale = 0.5;
     this.maxScale = 5;
@@ -76,10 +76,6 @@ export class InfiniteCanvas {
     this.addNodeForm = addNodeForm;
 
     this.initialize();
-  }
-
-  public getElements(): CanvasElement[] {
-    return this.elements;
   }
 
   initialize() {
@@ -99,6 +95,10 @@ export class InfiniteCanvas {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
     this.draw();
+  }
+
+  getGraph() {
+    return this.graph;
   }
 
   /**
@@ -135,7 +135,7 @@ export class InfiniteCanvas {
    * @param screenX - The x-coordinate in the screen space.
    * @param screenY - The y-coordinate in the screen space.
    */
-  setContextMenu(node: Node, screenX: number, screenY: number) {
+  setContextMenu(node: Vertex | Edge, screenX: number, screenY: number) {
     const actions = this.contextMenu.getActions(node, this);
     if (actions.length > 0) {
       this.contextMenu.updateActions(actions);
@@ -149,39 +149,50 @@ export class InfiniteCanvas {
    * @param elementId - The ID of the element to delete.
    */
   deleteElement(elementId: string) {
-    this.elements = this.elements.filter(
-      (element) => element.getId() !== elementId
-    );
+    this.graph.removeNodeById(elementId);
     this.draw();
   }
 
-  startConnection(node: Node, worldX: number, worldY: number) {
-    if (node.intoNodeConnector.containsPoint(worldX, worldY)) {
+  deleteEdge(edgeId: string) {
+    this.graph.removeEdgeById(edgeId);
+    this.draw();
+  }
+
+  startConnection(node: Vertex, worldX: number, worldY: number) {
+    if (node.inConnector.containsPoint(worldX, worldY)) {
       this.connectingNode = node;
-      this.connectingNodeConnector = node.intoNodeConnector;
-      this.connectionCurve.startX = node.intoNodeConnector.x;
-      this.connectionCurve.startY = node.intoNodeConnector.y;
-    } else if (node.outNodeConnector.containsPoint(worldX, worldY)) {
+      this.connectingNodeConnector = node.inConnector;
+      this.connectionCurve.startX = node.inConnector.x;
+      this.connectionCurve.startY = node.inConnector.y;
+    } else if (node.outConnector.containsPoint(worldX, worldY)) {
       this.connectingNode = node;
-      this.connectingNodeConnector = node.outNodeConnector;
-      this.connectionCurve.startX = node.outNodeConnector.x;
-      this.connectionCurve.startY = node.outNodeConnector.y;
+      this.connectingNodeConnector = node.outConnector;
+      this.connectionCurve.startX = node.outConnector.x;
+      this.connectionCurve.startY = node.outConnector.y;
     }
   }
 
-  closeConnection(node: Node, worldX: number, worldY: number) {
+  closeConnection(node: Vertex) {
     if (node !== this.connectingNode) {
-      // The case where the connection starts from the intoNodeConnection
-      // and ends at the outNodeConnection is called a "reverse connection"
       const isReverse =
-        this.connectingNode.intoNodeConnector === this.connectingNodeConnector;
+        this.connectingNode.inConnector === this.connectingNodeConnector;
       if (isReverse) {
-        if (!node.outConnections.includes(this.connectingNode)) {
-          node.outConnections.push(this.connectingNode);
+        if (!this.graph.hasConnection(node.id, this.connectingNode.id)) {
+          this.graph.addEdge(
+            new Edge({
+              start: node,
+              end: this.connectingNode,
+            })
+          );
         }
       } else {
-        if (!this.connectingNode.outConnections.includes(node)) {
-          this.connectingNode.outConnections.push(node);
+        if (!this.graph.hasConnection(this.connectingNode.id, node.id)) {
+          this.graph.addEdge(
+            new Edge({
+              start: this.connectingNode,
+              end: node,
+            })
+          );
         }
       }
     } else {
@@ -223,21 +234,21 @@ export class InfiniteCanvas {
       // Hide context menu on left click
       this.contextMenu.hide();
 
-      for (const element of this.elements) {
+      for (const element of this.graph.nodes) {
         if (element.containsPoint(worldX, worldY)) {
           // We've clicked on an NodeConnector
-          if (element instanceof Node) {
-            const node = element as Node;
+          if (element instanceof Vertex) {
+            const node = element as Vertex;
             const clickedOnConnector =
-              node.intoNodeConnector.containsPoint(worldX, worldY) ||
-              node.outNodeConnector.containsPoint(worldX, worldY);
+              node.inConnector.containsPoint(worldX, worldY) ||
+              node.outConnector.containsPoint(worldX, worldY);
             if (clickedOnConnector && !this.creatingConnection) {
               this.creatingConnection = true;
               this.startConnection(node, worldX, worldY);
               return;
             } else if (clickedOnConnector && this.creatingConnection) {
               this.creatingConnection = false;
-              this.closeConnection(node, worldX, worldY);
+              this.closeConnection(node);
             }
           }
         }
@@ -248,9 +259,17 @@ export class InfiniteCanvas {
       this.clearConnectionCurve();
 
       // Show context menu on right click
-      for (const element of this.elements) {
+      for (const element of this.graph.nodes) {
         if (element.containsPoint(worldX, worldY)) {
-          this.setContextMenu(element as Node, event.clientX, event.clientY);
+          this.setContextMenu(element as Vertex, event.clientX, event.clientY);
+          return;
+        }
+      }
+
+      // Show context menu on right click
+      for (const element of this.graph.edges) {
+        if (element.containsPoint(this.ctx, worldX, worldY)) {
+          this.setContextMenu(element as Edge, event.clientX, event.clientY);
           return;
         }
       }
@@ -262,7 +281,7 @@ export class InfiniteCanvas {
     // Set cursor to grabbing
     this.canvas.style.cursor = "grabbing";
 
-    for (const element of this.elements) {
+    for (const element of this.graph.nodes) {
       if (element.containsPoint(worldX, worldY)) {
         if ("onDragStart" in element) {
           const draggableElement = element as unknown as DraggableElement;
@@ -319,17 +338,33 @@ export class InfiniteCanvas {
       this.draggingElement.onDragMove(worldX, worldY);
     } else {
       // Check if the cursor is hovering over an element
-      for (const element of this.elements) {
+      for (const element of this.graph.nodes) {
         if (element.containsPoint(worldX, worldY)) {
           this.canvas.style.cursor = "pointer";
           if ("onHover" in element) {
-            const draggableElement = element as unknown as HoverableElement;
-            draggableElement.onHover();
+            const hoverableElement = element as unknown as HoverableElement;
+            hoverableElement.onHover();
           }
         } else {
           if ("hoverOff" in element) {
-            const draggableElement = element as unknown as HoverableElement;
-            draggableElement.hoverOff();
+            const hoverableElement = element as unknown as HoverableElement;
+            hoverableElement.hoverOff();
+          }
+        }
+      }
+
+      // Check if the cursor is hovering over an element
+      for (const element of this.graph.edges) {
+        if (element.containsPoint(this.ctx, worldX, worldY)) {
+          this.canvas.style.cursor = "pointer";
+          if ("onHover" in element) {
+            const hoverableElement = element as unknown as HoverableElement;
+            hoverableElement.onHover();
+          }
+        } else {
+          if ("hoverOff" in element) {
+            const hoverableElement = element as unknown as HoverableElement;
+            hoverableElement.hoverOff();
           }
         }
       }
@@ -359,8 +394,7 @@ export class InfiniteCanvas {
     }
   }
 
-  /**    console.log(actions);
-
+  /**
    * Zooms the canvas based on the provided wheel event.
    * @param event - The wheel event.
    */
@@ -391,8 +425,19 @@ export class InfiniteCanvas {
    * Adds a canvas element to the infinite canvas.
    * @param element - The canvas element to be added.
    */
-  addElement(element: CanvasElement) {
-    this.elements.push(element);
+  addElement(element: Node) {
+    this.graph.addNode(
+      new Node({
+        id: element.id,
+        x: element.x,
+        y: element.y,
+        width: element.width,
+        height: element.height,
+        color: element.color,
+        label: element.label,
+        fontColor: "#fff",
+      })
+    );
     this.draw();
   }
 
@@ -429,11 +474,19 @@ export class InfiniteCanvas {
    * Draws all the elements on the canvas.
    */
   drawElements() {
-    this.elements.forEach((element) => {
+    this.graph.nodes.forEach((node) => {
       this.ctx.save();
       this.ctx.translate(this.offsetX, this.offsetY);
       this.ctx.scale(this.scale, this.scale);
-      element.draw(this.ctx);
+      node.draw(this.ctx);
+      this.ctx.restore();
+    });
+
+    this.graph.edges.forEach((edge) => {
+      this.ctx.save();
+      this.ctx.translate(this.offsetX, this.offsetY);
+      this.ctx.scale(this.scale, this.scale);
+      edge.draw(this.ctx);
       this.ctx.restore();
     });
   }

@@ -3,7 +3,7 @@
  * connection is started, a line is drawn between the two nodes until the
  * connection is completed by clicking on another NodeConnector.
  */
-export class NodeConnector {
+export class Connector {
   /**
    * The x-coordinate of the node connector.
    */

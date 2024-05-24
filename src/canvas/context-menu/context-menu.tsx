@@ -1,14 +1,14 @@
 import { useState } from "react";
-import MenuAction, { IMenuAction } from "./menu-action";
-import { Node } from "../node/node";
+import { IMenuAction } from "./menu-action";
+import { Vertex } from "../graph/vertex";
 import InfiniteCanvas from "../infinite-canvas";
-import { Text } from "../text";
+import { Edge } from "../graph/edge";
 
 export interface IContextMenu extends JSX.Element {
   show(worldX: number, worldY: number): void;
   hide(): void;
   updateActions(newActions: IMenuAction[]): void;
-  getActions(node: Node, canvas: InfiniteCanvas): IMenuAction[];
+  getActions(node: Vertex | Edge, canvas: InfiniteCanvas): IMenuAction[];
 }
 
 /**
@@ -52,7 +52,7 @@ export const ContextMenu = (): IContextMenu => {
     setActions(newActions);
   };
 
-  const getActions = (node: Node, canvas: InfiniteCanvas): IMenuAction[] => {
+  const getActions = (node: Vertex, canvas: InfiniteCanvas): IMenuAction[] => {
     return node.getActions(canvas);
   };
 

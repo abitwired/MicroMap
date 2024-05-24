@@ -5,6 +5,7 @@ import { ILoadingIcon, LoadingIcon } from "./loading-icon";
 import { IAddNodeForm, AddNodeForm } from "../components/forms/AddNodeForm";
 import SaveProjectButton from "../components/sidebar/SaveProjectButton";
 import { AppContext } from "../store/app-provider";
+import { Graph } from "../store/graph";
 
 export const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -21,8 +22,10 @@ export const Canvas = () => {
 
   useEffect(() => {
     if (canvasRef.current) {
+      const nodes = state.app?.currentProject?.graph?.nodes || [];
+      const edges = state.app?.currentProject?.graph?.edges || [];
       const canvas = new InfiniteCanvas(
-        state.app?.currentProject,
+        new Graph(nodes, edges),
         canvasRef.current,
         contextMenuRef.current,
         loadingRef.current,

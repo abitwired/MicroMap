@@ -1,12 +1,11 @@
-import BaseElement from "../base-element";
+import { BaseElement } from "../base-element";
 import { DraggableElement, HoverableElement } from "../types";
-import ConnectionCurve from "./connection-curve";
-import { NodeConnector } from "./node-connector";
+import { Connector } from "./connector";
 
 /**
  * Represents a node in the canvas.
  */
-export class Node
+export class Vertex
   extends BaseElement
   implements DraggableElement, HoverableElement
 {
@@ -16,9 +15,8 @@ export class Node
   dragOffsetX: number;
   dragOffsetY: number;
   isHovered: boolean = false;
-  intoNodeConnector: NodeConnector = null;
-  outNodeConnector: NodeConnector = null;
-  outConnections: Node[] = [];
+  inConnector: Connector = null;
+  outConnector: Connector = null;
 
   /**
    * Creates a new instance of the Node class.
@@ -49,13 +47,13 @@ export class Node
     this.color = color;
     this.dragOffsetX = 0;
     this.dragOffsetY = 0;
-    this.intoNodeConnector = new NodeConnector(
+    this.inConnector = new Connector(
       this.x,
       this.y + this.height / 2,
       this.radius,
       this.color
     );
-    this.outNodeConnector = new NodeConnector(
+    this.outConnector = new Connector(
       this.x + this.width,
       this.y + this.height / 2,
       this.radius,
@@ -110,27 +108,27 @@ export class Node
     ctx.stroke();
 
     if (this.isHovered) {
-      this.intoNodeConnector.draw(ctx);
-      this.outNodeConnector.draw(ctx);
+      this.inConnector.draw(ctx);
+      this.outConnector.draw(ctx);
     }
 
-    // Draw the node's connections
-    this.outConnections.forEach((node) => {
-      const curve = new ConnectionCurve({
-        startX: this.outNodeConnector.x,
-        startY: this.outNodeConnector.y,
-        controlPoint1X: this.outNodeConnector.x + 50,
-        controlPoint1Y: this.outNodeConnector.y,
-        controlPoint2X: node.intoNodeConnector.x - 50,
-        controlPoint2Y: node.intoNodeConnector.y,
-        endX: node.intoNodeConnector.x,
-        endY: node.intoNodeConnector.y,
-        color: "white",
-        width: 3,
-        dash: [],
-      });
-      curve.draw(ctx);
-    });
+    // // Draw the node's connections
+    // this.outConnections.forEach((node) => {
+    //   const curve = new Curve({
+    //     startX: this.outNodeConnector.x,
+    //     startY: this.outNodeConnector.y,
+    //     controlPoint1X: this.outNodeConnector.x + 50,
+    //     controlPoint1Y: this.outNodeConnector.y,
+    //     controlPoint2X: node.intoNodeConnector.x - 50,
+    //     controlPoint2Y: node.intoNodeConnector.y,
+    //     endX: node.intoNodeConnector.x,
+    //     endY: node.intoNodeConnector.y,
+    //     color: "white",
+    //     width: 3,
+    //     dash: [],
+    //   });
+    //   curve.draw(ctx);
+    // });
   }
 
   /**
@@ -165,10 +163,10 @@ export class Node
   onDragMove(x: number, y: number) {
     this.x = x - this.dragOffsetX;
     this.y = y - this.dragOffsetY;
-    this.intoNodeConnector.x = this.x;
-    this.intoNodeConnector.y = this.y + this.height / 2;
-    this.outNodeConnector.x = this.x + this.width;
-    this.outNodeConnector.y = this.y + this.height / 2;
+    this.inConnector.x = this.x;
+    this.inConnector.y = this.y + this.height / 2;
+    this.outConnector.x = this.x + this.width;
+    this.outConnector.y = this.y + this.height / 2;
   }
 
   /**
@@ -184,4 +182,4 @@ export class Node
   }
 }
 
-export default Node;
+export default Vertex;
