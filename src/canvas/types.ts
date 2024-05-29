@@ -1,5 +1,5 @@
 import { IMenuAction } from "./context-menu/menu-action";
-import InfiniteCanvas from "./infinite-canvas";
+import { InfiniteCanvas } from "./infinite-canvas";
 
 /**
  * Represents a canvas element.

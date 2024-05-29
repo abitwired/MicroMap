@@ -2,7 +2,7 @@ import { Save } from "react-feather";
 import { Types } from "../../store/types";
 import { AppContext } from "../../store/app-provider";
 import { useContext } from "react";
-import InfiniteCanvas from "../../canvas/infinite-canvas";
+import { InfiniteCanvas } from "../../canvas/infinite-canvas";
 import { Graph } from "../../store/graph";
 
 export const SaveProjectButton = ({

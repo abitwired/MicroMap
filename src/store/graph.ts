@@ -1,8 +1,8 @@
 import { CanvasElement } from "../canvas/types";
 import { Node as VisualNode } from "../canvas/graph/node";
 import { Edge as VisualEdge } from "../canvas/graph/edge";
-import { Curve } from "../canvas/graph/curve";
 import { VisualGraph } from "../canvas/graph/visual-graph";
+import { ServiceDefinition } from "./types";
 
 /**
  * Represents a vertex in a graph.
@@ -22,6 +22,8 @@ export type Node = {
   width: number;
   /** The height of the vertex. */
   height: number;
+  /** The service definition of the vertex. */
+  serviceDefinition: ServiceDefinition;
 };
 
 /**
@@ -129,6 +131,7 @@ export class Graph {
         color: node.color,
         width: node.width,
         height: node.height,
+        serviceDefinition: node.serviceDefinition,
       };
     });
 
@@ -140,47 +143,6 @@ export class Graph {
     });
 
     return new Graph(nodes, edges);
-  }
-
-  convertGraphToCanvasElements(): CanvasElement[] {
-    const canvasElements: CanvasElement[] = this.nodes.map((node) => {
-      return new VisualNode({
-        id: node.id,
-        x: node.x,
-        y: node.y,
-        width: node.width,
-        height: node.height,
-        label: node.label,
-        color: node.color,
-        fontColor: "#fff",
-      });
-    });
-
-    this.edges.forEach((connection) => {
-      const fromVertex = this.nodes.find(
-        (vertex) => vertex.id === connection.from
-      );
-      const toVertex = this.nodes.find((vertex) => vertex.id === connection.to);
-
-      canvasElements.push(
-        new Curve({
-          id: `${connection.from}-${connection.to}`,
-          startX: fromVertex.x,
-          startY: fromVertex.y,
-          controlPoint1X: fromVertex.x + 50,
-          controlPoint1Y: fromVertex.y,
-          controlPoint2X: toVertex.x - 50,
-          controlPoint2Y: toVertex.y,
-          endX: toVertex.x,
-          endY: toVertex.y,
-          color: "#fff",
-          width: 3,
-          dash: [],
-        })
-      );
-    });
-
-    return canvasElements;
   }
 
   /**
@@ -208,6 +170,7 @@ export class Graph {
           color: element.color,
           width: element.width,
           height: element.height,
+          serviceDefinition: element.serviceDefinition,
         };
       });
 

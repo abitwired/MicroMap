@@ -14,7 +14,7 @@ export class Vertex
   color: string;
   dragOffsetX: number;
   dragOffsetY: number;
-  isHovered: boolean = false;
+  isHovered = false;
   inConnector: Connector = null;
   outConnector: Connector = null;
 

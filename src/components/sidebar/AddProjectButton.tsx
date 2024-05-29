@@ -2,6 +2,15 @@ import { useContext } from "react";
 import { AppContext } from "../../store/app-provider";
 import { Types } from "../../store/types";
 
+const uuidv4 = () => {
+  return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) =>
+    (
+      +c ^
+      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))
+    ).toString(16)
+  );
+};
+
 export const AddProjectButton = () => {
   const { state, dispatch } = useContext(AppContext);
 
@@ -11,7 +20,7 @@ export const AddProjectButton = () => {
     dispatch({
       type: Types.Create,
       payload: {
-        id: new Date().toISOString(),
+        id: uuidv4(),
         name: `Untitled Project`,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

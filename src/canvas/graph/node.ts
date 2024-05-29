@@ -1,4 +1,5 @@
-import MenuAction, { IMenuAction } from "../context-menu/menu-action";
+import { ServiceDefinition } from "../../store/types";
+import { MenuAction, IMenuAction } from "../context-menu/menu-action";
 import { InfiniteCanvas } from "../infinite-canvas";
 import { TextElement } from "../types";
 import { Vertex } from "./vertex";
@@ -10,6 +11,7 @@ export class Node extends Vertex implements TextElement {
   id: string;
   label: string;
   fontColor: string;
+  serviceDefinition: ServiceDefinition;
 
   /**
    * Creates a new instance of the Text class.
@@ -32,6 +34,7 @@ export class Node extends Vertex implements TextElement {
     label,
     color,
     fontColor,
+    serviceDefinition
   }: {
     id: string;
     x: number;
@@ -41,10 +44,12 @@ export class Node extends Vertex implements TextElement {
     label: string;
     color: string;
     fontColor: string;
+    serviceDefinition: ServiceDefinition;
   }) {
     super({ id, x, y, width, height, color });
     this.label = label;
     this.fontColor = fontColor;
+    this.serviceDefinition = serviceDefinition;
   }
 
   getLines(
@@ -148,6 +153,7 @@ export class Node extends Vertex implements TextElement {
       label: json.text as string,
       color: json.color as string,
       fontColor: json.fontColor as string,
+      serviceDefinition: json.serviceDefinition as ServiceDefinition,
     });
   }
 }

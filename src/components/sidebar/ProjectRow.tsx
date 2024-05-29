@@ -4,11 +4,11 @@ import { DeleteProjectButton } from "./DeleteProjectButton";
 import { EditProjectButton } from "./EditProjectButton";
 import { AppContext } from "../../store/app-provider";
 
-export const ProjectRow = (project: Project) => {
+export const ProjectRow = ({ project }: { project: Project }) => {
+  const { dispatch } = useContext(AppContext);
   const date = new Date(project.updatedAt);
   const [editableProject, setEditableProject] = useState<Project>(project);
   const [isEditing, setIsEditing] = useState(false);
-  const { dispatch } = useContext(AppContext);
   const [isHovering, setIsHovering] = useState(false);
   const onClick = () => {
     dispatch({
@@ -53,8 +53,6 @@ export const ProjectRow = (project: Project) => {
         api.saveProject(editableProject);
       };
     }
-
-    return () => {};
   }, [isEditing]);
 
   return (

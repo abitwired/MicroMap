@@ -3,7 +3,7 @@ import { InfiniteCanvas } from "./infinite-canvas";
 import { ContextMenu, IContextMenu } from "./context-menu/context-menu";
 import { ILoadingIcon, LoadingIcon } from "./loading-icon";
 import { IAddNodeForm, AddNodeForm } from "../components/forms/AddNodeForm";
-import SaveProjectButton from "../components/sidebar/SaveProjectButton";
+import { SaveProjectButton } from "../components/sidebar/SaveProjectButton";
 import { AppContext } from "../store/app-provider";
 import { Graph } from "../store/graph";
 
@@ -39,7 +39,7 @@ export const Canvas = () => {
   return (
     <>
       {contextMenuRef.current}
-      <div>
+      <div className="relative">
         {loadingRef.current}
         {addNodeFormRef.current}
         <div className="absolute top-4 right-4">
@@ -47,7 +47,7 @@ export const Canvas = () => {
         </div>
         <canvas
           id="canvas"
-          className="rounded-md w-full"
+          className="w-full rounded-md"
           ref={canvasRef}
         ></canvas>
       </div>

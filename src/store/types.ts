@@ -8,6 +8,15 @@ export type Project = {
   graph: Graph;
 };
 
+export type ServiceDefinition = {
+  image: string;
+  ports: number[];
+  environment: Record<string, string>;
+  volumes: string[];
+  networks: string[];
+  command: string;
+};
+
 export type App = {
   currentProject: Project | null;
 };

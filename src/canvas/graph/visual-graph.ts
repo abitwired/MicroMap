@@ -18,6 +18,7 @@ export class VisualGraph {
           color: vertex.color,
           label: vertex.label,
           fontColor: "#fff",
+          serviceDefinition: vertex.serviceDefinition,
         })
     );
 

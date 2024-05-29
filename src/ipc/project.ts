@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import { Project } from "../store/types";
 
 const createProject = global.share.ipcMain.handle("createProject", async () => {
@@ -31,7 +32,7 @@ const saveProject = global.share.ipcMain.handle(
       };
 
       const projectPath = `${global.share.appDirectory}/projects/`;
-      fs.mkdirSync(projectPath, { recursive: true });
+      await fs.mkdirSync(projectPath, { recursive: true });
 
       const filePath = `${projectPath}/${project.id}.json`;
       fs.writeFileSync(filePath, JSON.stringify(updatedProject));

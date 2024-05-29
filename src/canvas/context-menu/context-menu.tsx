@@ -58,7 +58,7 @@ export const ContextMenu = (): IContextMenu => {
 
   const render = () => (
     <div
-      className={`absolute p-1 min-w-[100px] bg-gray-600 rounded-md border border-gray-200 shadow-lg ${
+      className={`z-10 absolute p-1 min-w-[100px] bg-gray-600 rounded-md border border-gray-200 shadow-lg ${
         isVisible ? "" : "hidden"
       }`}
       style={{ top: coordinates.y, left: coordinates.x }}

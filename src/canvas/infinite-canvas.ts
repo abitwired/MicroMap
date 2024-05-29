@@ -3,7 +3,7 @@ import { MenuAction } from "./context-menu/menu-action";
 import { ILoadingIcon } from "./loading-icon";
 import { IAddNodeForm } from "../components/forms/AddNodeForm";
 import { Vertex } from "./graph/vertex";
-import { CanvasElement, DraggableElement, HoverableElement } from "./types";
+import { DraggableElement, HoverableElement } from "./types";
 import { Connector } from "./graph/connector";
 import { Curve } from "./graph/curve";
 import { Graph } from "../store/graph";
@@ -27,7 +27,7 @@ export class InfiniteCanvas {
   startX: number;
   startY: number;
   draggingElement: DraggableElement | null;
-  creatingConnection: boolean = false;
+  creatingConnection = false;
   contextMenu: IContextMenu;
   saveInterval: NodeJS.Timeout | null;
   savePendingInterval: NodeJS.Timeout | null;
@@ -436,6 +436,7 @@ export class InfiniteCanvas {
         color: element.color,
         label: element.label,
         fontColor: "#fff",
+        serviceDefinition: element.serviceDefinition,
       })
     );
     this.draw();

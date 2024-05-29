@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { AppContext } from "../store/app-provider";
-import Canvas from "../canvas/canvas";
+import { Canvas } from "../canvas/canvas";
 import { Box } from "react-feather";
 
 export const CurrentProject = () => {
